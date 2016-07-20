@@ -154,6 +154,9 @@ def float_all(data):
 
     return data
 
+## Taking out some special characters
+renaloc['departement'] = renaloc['departement'].str.replace('\r' , '')
+renaloc['locality'] = renaloc['locality'].str.replace('\r' , '')
 
 ## Now going through all loaded data and parsing coordinates and putting all variables into numeric
 renaloc['longitude'] = renaloc['latitude'] = ''
@@ -178,5 +181,6 @@ for i in range(len(renaloc)):
 
 ## Keeping only data with geolocation
 geolocalized_data = renaloc[~(renaloc.longitude == '')]
+
 
 geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv')
