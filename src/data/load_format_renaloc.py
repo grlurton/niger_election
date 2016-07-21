@@ -117,9 +117,11 @@ for i in range(1,len(renaloc)) :
 def conversion(old):
     new = old.replace(u'°',' ').replace('\'',' ').replace('"',' ')
     new = new.split()
-    new_dir = new.pop()
+    #new_dir = new.pop()
     new.extend([0,0,0])
     return (int(new[0])+int(new[1])/60.0+int(new[2])/3600.0)
+
+
 
 ## Function to parse GPS coordinates as they appear in the Tabula extracted csv
 def extract_gps(pdf_string):
@@ -163,6 +165,7 @@ renaloc['longitude'] = renaloc['latitude'] = ''
 num_variables = ['hommes' , 'femmes' , 'menages' , 'menages_agricoles' , 'population']
 
 for i in range(len(renaloc)):
+
     for var in range(len(num_variables)):
         variable = num_variables[var]
         renaloc.loc[i , variable] = float_all(renaloc.loc[i , variable])
