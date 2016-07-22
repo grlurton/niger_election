@@ -25,14 +25,16 @@ def get_data(adress) :
             out = liste_depts.reset_index()
             out = out.drop(0)
             if len(out.columns) >= 9 :
-                out = out.iloc[: , [0,1,3,4,5,6,7]]
-            out.columns = ['locality' , 'population' , 'hommes', 'femmes' , 'menages' , 'menages_agricoles' , 'geoloc']
+                out = out.iloc[: , [0,1,3,4,5,6,7,8]]
+            out.columns = ['locality' , 'population' , 'hommes', 'femmes' , 'menages' , 'menages_agricoles' , 'geoloc','settlement_type']
+            #print(out.head())
             ## Excluding tables that pass the column count test but are improper
             if out.loc[1 , 'locality'].__class__.__name__ in ['int64' , 'float'] :
                 out = float('nan')
-            return out
+        return out
 
     except (ValueError , IndexError) :
+        print(out.head())
         out = float('nan')
 
 
@@ -58,6 +60,7 @@ for i in order :
 
 ## Transforming document hierarchical structure into covariables for Geographical zones
 renaloc['level']  = renaloc['region'] = renaloc['departement'] = renaloc['commune'] = renaloc['milieu'] =         region = departement = commune = nom_sup = level = ''
+
 for i in range(1,len(renaloc)) :
 
     u = renaloc.iloc[i]
@@ -164,6 +167,8 @@ renaloc['locality'] = renaloc['locality'].str.replace('\r' , '')
 renaloc['longitude'] = renaloc['latitude'] = ''
 num_variables = ['hommes' , 'femmes' , 'menages' , 'menages_agricoles' , 'population']
 
+
+
 for i in range(len(renaloc)):
 
     for var in range(len(num_variables)):
@@ -185,5 +190,6 @@ for i in range(len(renaloc)):
 ## Keeping only data with geolocation
 geolocalized_data = renaloc[~(renaloc.longitude == '')]
 
+geolocalized_data.head()
 
 geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv')
