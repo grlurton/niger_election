@@ -186,10 +186,11 @@ for i in range(len(renaloc)):
         except (IndexError) :
             print('Index Error at ' + str(i))
 
+renaloc.region = renaloc.region.str.strip()
+renaloc.commune = renaloc.commune.str.strip()
+renaloc.departement = renaloc.departement.str.strip()
 
 ## Keeping only data with geolocation
 geolocalized_data = renaloc[~(renaloc.longitude == '')]
-
-geolocalized_data.head()
 
 geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv')
