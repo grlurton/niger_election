@@ -4,19 +4,18 @@
 import pandas as pd
 import json
 import warnings
+import os as os
+
 warnings.filterwarnings('ignore')
 
 ## Setting working directory
 os.chdir('c://users/grlurton/documents/niger_election_data')
 
-## Mapping to data directory
-data_dir = os.listdir('data/raw/tabula-RENALOC_Niger_733/')
-
 ## Loading data from Renaloc
 renaloc = pd.read_csv('data/processed/renaloc_localities.csv'  , encoding = "ISO-8859-1")
 
 ## Loading data from electoral lists
-store_electeurs = pd.HDFStore('/data/raw/full_data.h5')
+store_electeurs = pd.HDFStore('data/raw/full_data.h5')
 data_electeurs = store_electeurs['complete_data']
 store_electeurs.close()
 
