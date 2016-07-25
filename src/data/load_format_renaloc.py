@@ -196,5 +196,8 @@ renaloc['departement'] = renaloc.departement.str.strip()
 
 ## Keeping only data with geolocation
 geolocalized_data = renaloc[~(renaloc.longitude == '')]
-
 geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv')
+
+## Other output for localities only
+locality_data = renaloc[renaloc.level == 'Localite']
+locality_data.to_csv('data/processed/renaloc_localities.csv')
