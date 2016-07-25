@@ -198,5 +198,3 @@ renaloc['departement'] = renaloc.departement.str.strip()
 geolocalized_data = renaloc[~(renaloc.longitude == '')]
 
 geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv')
-
-geolocalized_data.commune.order().unique()
