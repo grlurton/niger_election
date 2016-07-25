@@ -161,6 +161,7 @@ def float_all(data):
 
 ## Taking out some special characters
 renaloc['departement'] = renaloc['departement'].str.replace('\r' , '')
+renaloc['commune'] = renaloc['commune'].str.replace('\r|\n' , '')
 renaloc['locality'] = renaloc['locality'].str.replace('\r' , '')
 
 ## Now going through all loaded data and parsing coordinates and putting all variables into numeric
@@ -186,11 +187,16 @@ for i in range(len(renaloc)):
         except (IndexError) :
             print('Index Error at ' + str(i))
 
-renaloc.region = renaloc.region.str.strip()
-renaloc.commune = renaloc.commune.str.strip()
-renaloc.departement = renaloc.departement.str.strip()
+
+
+
+renaloc['region'] = renaloc.region.str.strip()
+renaloc['commune'] = renaloc.commune.str.strip()
+renaloc['departement'] = renaloc.departement.str.strip()
 
 ## Keeping only data with geolocation
 geolocalized_data = renaloc[~(renaloc.longitude == '')]
 
 geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv')
+
+geolocalized_data.commune.order().unique()
