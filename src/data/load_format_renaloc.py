@@ -194,6 +194,13 @@ renaloc['region'] = renaloc.region.str.strip()
 renaloc['commune'] = renaloc.commune.str.strip()
 renaloc['departement'] = renaloc.departement.str.strip()
 
+renaloc.loc[(renaloc['commune'] == 'KORE') & (renaloc['region'] == 'DOSSO') , 'commune'] = "KORE MAIROUA"
+renaloc.loc[(renaloc['commune'] == 'GUIDAN') & (renaloc['region'] == 'MARADI') , 'commune'] = "GUIDAN AMOUMOUNE"
+renaloc.loc[(renaloc['commune'] == 'BIRNI') & (renaloc['region'] == 'TAHOUA') , 'commune'] = "BIRNI N'KONNI"
+renaloc.loc[(renaloc['commune'] == 'GALMA') & (renaloc['region'] == 'TAHOUA') , 'commune'] = "GALMA KOUDAWATCHE"
+renaloc.loc[(renaloc['commune'] == 'KOURFEYE') & (renaloc['region'] == 'TILLABERI') , 'commune'] = "KOURFEYE CENTRE"
+renaloc.loc[(renaloc['commune'] == 'OURO') & (renaloc['region'] == 'TILLABERI') , 'commune'] = "OURO GUELADJO"
+
 ## Keeping only data with geolocation
 geolocalized_data = renaloc[~(renaloc.longitude == '')]
 geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv')
