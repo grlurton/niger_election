@@ -14,7 +14,6 @@ from IPython.display import Markdown , Latex
 os.chdir('c://users/grlurton/documents/niger_election_data')
 
 data = pd.read_csv('data/processed/commune_collapsed_matched.csv')
-data = data[data.population_census < 1000000]
 
 regs = pd.get_dummies(data.region)
 
@@ -39,6 +38,3 @@ ax.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
 ax.set_xlabel('Measured')
 ax.set_ylabel('Predicted')
 plt.show()
-
-
-data[data.population_census > 200000]
