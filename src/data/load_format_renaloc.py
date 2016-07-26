@@ -66,6 +66,9 @@ for i in range(1,len(renaloc)) :
     u = renaloc.iloc[i]
     name = u.locality
     try :
+        # Dirty trick to manage : omission
+        name = name.replace('COMMUNE DE ' , 'COMMUNE DE :')
+        name = name.replace('::' , ':')
         splitted = name.split(':')
         if (len(splitted) >= 2) :
             splitted[0] = splitted[0].replace(' ' , '')
@@ -112,7 +115,6 @@ for i in range(1,len(renaloc)) :
             renaloc.loc[i , 'commune'] = commune
     except (RuntimeError, TypeError, NameError , AttributeError):
         pass
-
 
 
 ## Function to convert GPS coordinates into Lat / long
