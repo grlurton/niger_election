@@ -57,9 +57,15 @@ for i in order :
         if (len(renaloc) > 0) :
             renaloc = renaloc.append(dat , ignore_index = True)
 
+## Ad hoc correction of problematic values
+dak_list = renaloc[renaloc.locality == 'DAKORO (DÃ©partement)'].index.tolist()
+renaloc.loc[dak_list[0],'locality'] = 'DAKORO : Urbain'
+renaloc.loc[dak_list[1],'locality'] = 'DAKORO : Rural'
 
 ## Transforming document hierarchical structure into covariables for Geographical zones
 renaloc['level']  = renaloc['region'] = renaloc['departement'] = renaloc['commune'] = renaloc['milieu'] =         region = departement = commune = nom_sup = level = ''
+
+
 
 for i in range(1,len(renaloc)) :
 
@@ -89,6 +95,13 @@ for i in range(1,len(renaloc)) :
                 renaloc.loc[i,'region'] = region
                 renaloc.loc[i,'departement'] = departement
                 renaloc.loc[i,'commune'] = commune
+            if (splitted[0] == 'VILLEDE') :
+                renaloc.loc[i,'level']= level = 'Ville'
+                commune = splitted[1]
+
+                renaloc.loc[i,'region'] = region
+                renaloc.loc[i,'departement'] = departement
+                renaloc.loc[i,'commune'] = commune
             if (splitted[1] == ' Urbain') :
                 renaloc.loc[i ,'milieu'] = 'Urbain'
             if (splitted[1] == ' Rural') :
@@ -105,9 +118,19 @@ for i in range(1,len(renaloc)) :
             if (level == 'Commune') :
                 renaloc.loc[i , 'region'] = region
                 renaloc.loc[i , 'departement'] = departement
-                renaloc.loc[i , 'commune'] = commune
-
                 renaloc.loc[i , 'level'] = level
+
+            if (level == 'Ville') :
+                renaloc.loc[i , 'region'] = region
+                renaloc.loc[i , 'departement'] = departement
+                if 'ARRONDISSEMENT' in name :
+                    commune = name.split(' ')[1]
+                    renaloc.loc[i , 'commune'] = commune
+                    renaloc.loc[i , 'level'] = 'commune'
+                else :
+                    renaloc.loc[i , 'commune'] = commune
+                    renaloc.loc[i , 'level'] = 'localite'
+
         else :
             renaloc.loc[i , 'level'] = 'Localite'
             renaloc.loc[i , 'region'] = region
