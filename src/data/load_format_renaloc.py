@@ -52,10 +52,11 @@ for i in order :
     dat = get_data(addresse)
     if (dat.__class__.__name__ == 'DataFrame') :
         print(addresse)
-        if (len(renaloc) == 0) :
-            renaloc = dat
         if (len(renaloc) > 0) :
             renaloc = renaloc.append(dat , ignore_index = True)
+        if (len(renaloc) == 0) :
+            renaloc = dat
+
 
 ## Ad hoc correction of problematic values
 dak_list = renaloc[renaloc.locality == 'DAKORO (DÃ©partement)'].index.tolist()
