@@ -14,20 +14,10 @@ os.chdir('c://users/grlurton/documents/niger_election_data')
 renaloc = pd.read_csv('data/processed/renaloc_localities.csv'  , encoding = "ISO-8859-1")
 
 ## Loading data from electoral lists
-store_electeurs = pd.HDFStore('data/raw/full_data.h5')
-data_electeurs = store_electeurs['complete_data']
-store_electeurs.close()
+data_electeurs = pd.read_csv('data/processed/voters_list.csv'  , encoding = "ISO-8859-1")
 
 ## Droping data for electors from the Diaspora
 data_electeurs = data_electeurs[~(data_electeurs['NOM_REGION'] == 'DIASPORA')]
-
-## Renaming some communes in electoral to match with renaloc
-## SHOULD BE MADE IN ELECTORAL DATA FORMATTING SCRIPT
-data_electeurs.loc[data_electeurs['NOM_COMMUNE'].isin(['TIBIRI (DOUTCHI)' , 'TIBIRI (MARADI)']), 'NOM_COMMUNE'] = 'TIBIRI'
-data_electeurs.loc[data_electeurs['NOM_COMMUNE'].isin(['GANGARA (AGUIE)' , 'GANGARA (TANOUT)']), 'NOM_COMMUNE'] = 'GANGARA'
-data_electeurs.loc[data_electeurs['NOM_COMMUNE'].isin(['MARADI ARRONDISSEMENT 1']), 'NOM_COMMUNE'] = 'ARRONDISSEMENT 1'
-data_electeurs.loc[data_electeurs['NOM_COMMUNE'].isin(['MARADI ARRONDISSEMENT 2']), 'NOM_COMMUNE'] = 'ARRONDISSEMENT 2'
-data_electeurs.loc[data_electeurs['NOM_COMMUNE'].isin(['MARADI ARRONDISSEMENT 3']), 'NOM_COMMUNE'] = 'ARRONDISSEMENT 3'
 
 ## Compute population in each data source and merge sources
 def sum_population(data):
