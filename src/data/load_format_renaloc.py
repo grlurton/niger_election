@@ -24,7 +24,9 @@ def get_data(adress) :
         if len(liste_depts.columns) >= 8 :
             out = liste_depts.reset_index()
             out = out.drop(0)
-            if len(out.columns) >= 9 :
+            if len(out.columns) < 10 :
+                out = out.iloc[: , [1,2,3,4,5,6,7,8]]
+            if len(out.columns) >= 10 :
                 out = out.iloc[: , [0,1,3,4,5,6,7,8]]
             out.columns = ['locality' , 'population' , 'hommes', 'femmes' , 'menages' , 'menages_agricoles' , 'geoloc','settlement_type']
             #print(out.head())
@@ -63,6 +65,15 @@ dak_list = renaloc[renaloc.locality == 'DAKORO (DÃ©partement)'].index.tolist()
 renaloc.loc[dak_list[0],'locality'] = 'DAKORO : Urbain'
 renaloc.loc[dak_list[1],'locality'] = 'DAKORO : Rural'
 renaloc.loc[renaloc.locality == 'DEPARTEMENT : TESSAOUA'] = 'DEPARTEMENT DE : TESSAOUA'
+
+sarkin_haoussa = renaloc[renaloc.locality == 'SARKIN HAOUSSA : Rural'].index
+renaloc.loc[(sarkin_haoussa[0] - 1),'locality'] = 'COMMUNE DE : SARKIN HAOUSSA'
+
+sarkin_yamma = renaloc[renaloc.locality == 'SARKIN YAMMA : Rural'].index
+renaloc.loc[(sarkin_yamma[0] - 1),'locality'] = 'COMMUNE DE : SARKIN YAMMA'
+
+akoubounou = renaloc[renaloc.locality == 'AKOUBOUNOU: Rural'].index
+renaloc.loc[(akoubounou[0] - 1),'locality'] = 'COMMUNE DE : AKOUBOUNOU'
 
 ## Transforming document hierarchical structure into covariables for Geographical zones
 renaloc['level']  = renaloc['region'] = renaloc['departement'] = renaloc['commune'] = renaloc['milieu'] =         region = departement = commune = nom_sup = level = ''
@@ -149,11 +160,12 @@ for i in range(1,len(renaloc)) :
     except (RuntimeError, TypeError, NameError , AttributeError):
         pass
 
+len(renaloc)
 
 ## Taking out some special characters
 renaloc['region'] = renaloc['region'].str.replace('\r|\n|:' , '').str.strip()
 renaloc['departement'] = renaloc['departement'].str.replace('\r|\n|:' , '').str.strip()
-renaloc['commune'] = renaloc['commune'].str.replace('\r|\n|:|Rural' , '').str.strip()
+renaloc['commune'] = renaloc['commune'].str.replace('\r|\n|:|Rural|' , '').str.strip()
 renaloc['locality'] = renaloc['locality'].str.replace('\r|\n|:' , '').str.strip()
 
 ## Function to convert GPS coordinates into Lat / long
@@ -230,6 +242,7 @@ renaloc.loc[(renaloc['commune'] == 'BIRNI') & (renaloc['region'] == 'TAHOUA') , 
 renaloc.loc[(renaloc['commune'] == 'GALMA') & (renaloc['region'] == 'TAHOUA') , 'commune'] = "GALMA KOUDAWATCHE"
 renaloc.loc[(renaloc['commune'] == 'KOURFEYE') & (renaloc['region'] == 'TILLABERI') , 'commune'] = "KOURFEYE CENTRE"
 renaloc.loc[(renaloc['commune'] == 'OURO') & (renaloc['region'] == 'TILLABERI') , 'commune'] = "OURO GUELADJO"
+renaloc.loc[(renaloc['commune'] == 'ARRONDISSEMENT  3') , 'commune'] = "ARRONDISSEMENT 3"
 
 ## Keeping only data with geolocation
 geolocalized_data = renaloc[~(renaloc.longitude == '')]
