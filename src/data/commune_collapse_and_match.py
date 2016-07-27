@@ -26,6 +26,9 @@ data_electeurs = data_electeurs[~(data_electeurs['NOM_REGION'] == 'DIASPORA')]
 ## SHOULD BE MADE IN ELECTORAL DATA FORMATTING SCRIPT
 data_electeurs.loc[data_electeurs['NOM_COMMUNE'].isin(['TIBIRI (DOUTCHI)' , 'TIBIRI (MARADI)']), 'NOM_COMMUNE'] = 'TIBIRI'
 data_electeurs.loc[data_electeurs['NOM_COMMUNE'].isin(['GANGARA (AGUIE)' , 'GANGARA (TANOUT)']), 'NOM_COMMUNE'] = 'GANGARA'
+data_electeurs.loc[data_electeurs['NOM_COMMUNE'].isin(['MARADI ARRONDISSEMENT 1']), 'NOM_COMMUNE'] = 'ARRONDISSEMENT 1'
+data_electeurs.loc[data_electeurs['NOM_COMMUNE'].isin(['MARADI ARRONDISSEMENT 2']), 'NOM_COMMUNE'] = 'ARRONDISSEMENT 2'
+data_electeurs.loc[data_electeurs['NOM_COMMUNE'].isin(['MARADI ARRONDISSEMENT 3']), 'NOM_COMMUNE'] = 'ARRONDISSEMENT 3'
 
 ## Compute population in each data source and merge sources
 def sum_population(data):

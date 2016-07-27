@@ -27,7 +27,7 @@ x_cat = data[['region']].T.to_dict().values()
 v = DictVectorizer(sparse=False)
 x_cat = v.fit_transform(x_cat)
 
-x_train = np.hstack((data[['population_voting_list' , 'mean_age' , 'prop_women']] , x_cat ))
+x_train = np.hstack((data[['population_voting_list' , 'mean_age']] , x_cat ))
 
 
 predicted = cross_val_predict(lr, x_train  , y, cv=100)

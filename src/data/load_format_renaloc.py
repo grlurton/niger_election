@@ -58,10 +58,11 @@ for i in order :
             renaloc = dat
 
 
-## Ad hoc correction of problematic values
+## Ad hoc corrections of problematic values
 dak_list = renaloc[renaloc.locality == 'DAKORO (DÃ©partement)'].index.tolist()
 renaloc.loc[dak_list[0],'locality'] = 'DAKORO : Urbain'
 renaloc.loc[dak_list[1],'locality'] = 'DAKORO : Rural'
+renaloc.loc[renaloc.locality == 'DEPARTEMENT : TESSAOUA'] = 'DEPARTEMENT DE : TESSAOUA'
 
 ## Transforming document hierarchical structure into covariables for Geographical zones
 renaloc['level']  = renaloc['region'] = renaloc['departement'] = renaloc['commune'] = renaloc['milieu'] =         region = departement = commune = nom_sup = level = ''
@@ -69,47 +70,65 @@ renaloc['level']  = renaloc['region'] = renaloc['departement'] = renaloc['commun
 
 
 for i in range(1,len(renaloc)) :
-
     u = renaloc.iloc[i]
     name = u.locality
     try :
-        # Dirty trick to manage : omission
-        name = name.replace('COMMUNE DE ' , 'COMMUNE DE :')
-        name = name.replace('::' , ':')
-        splitted = name.split(':')
-        if (len(splitted) >= 2) :
-            splitted[0] = splitted[0].replace(' ' , '')
-            if (splitted[0] == 'REGIONDE') :
-                renaloc.loc[i,'level']= level = 'Region'
-                region = splitted[1]
-                renaloc.loc[i,'region'] = region
-            if (splitted[0] == 'DEPARTEMENTDE') :
-                renaloc.loc[i,'level']= level = 'Departement'
-                departement = splitted[1]
+        if 'REGION DE' in name :
+            print(name)
+            level = 'Region'
+            renaloc.loc[i,'level'] = level
+            region = name.split('REGION DE')[1]
+            departement = ''
+            commune = ''
+            renaloc.loc[i,'region'] = region
+        elif 'DEPARTEMENT DE' in name :
+            level = 'Departement'
+            renaloc.loc[i,'level']=  'level'
+            departement = name.split('DEPARTEMENT DE')[1]
+            renaloc.loc[i,'region'] = region
+            renaloc.loc[i,'departement'] = departement
+            commune = ''
+        elif 'COMMUNE DE' in name :
+            level = 'Commune'
+            renaloc.loc[i,'level']= level
+            commune = name.split('COMMUNE DE')[1]
+            renaloc.loc[i,'region'] = region
+            renaloc.loc[i,'departement'] = departement
+            renaloc.loc[i,'commune'] = commune
+        elif 'VILLE DE' in name :
+            if level != 'Ville' :
+                level = 'Ville'
+                arr = ''
+                departement = name.split('VILLE DE')[1]
 
-                renaloc.loc[i,'region'] = region
-                renaloc.loc[i,'departement'] = departement
-            if (splitted[0] == 'COMMUNEDE') :
-                renaloc.loc[i,'level']= level = 'Commune'
-                commune = splitted[1]
+            renaloc.loc[i,'level'] = level
+            renaloc.loc[i,'region'] = region
+            renaloc.loc[i,'departement'] = departement
+        elif 'ARRONDISSEMENT' in name :
+            if level != 'arrondissement' :
+                level = 'arrondissement'
+                commune = 'ARRONDISSEMENT' + name.split('ARRONDISSEMENT')[1]
 
-                renaloc.loc[i,'region'] = region
-                renaloc.loc[i,'departement'] = departement
-                renaloc.loc[i,'commune'] = commune
-            if (splitted[0] == 'VILLEDE') :
-                renaloc.loc[i,'level']= level = 'Ville'
-                commune = splitted[1]
+            renaloc.loc[i,'region'] = region
+            renaloc.loc[i,'departement'] = departement
+            renaloc.loc[i , 'commune'] = commune
+            renaloc.loc[i , 'level'] = level
 
-                renaloc.loc[i,'region'] = region
-                renaloc.loc[i,'departement'] = departement
-                renaloc.loc[i,'commune'] = commune
-            if (splitted[1] == ' Urbain') :
+        else :
+            level = 'Localite'
+            renaloc.loc[i , 'level'] = 'Localite'
+            renaloc.loc[i , 'region'] = region
+            renaloc.loc[i , 'departement'] = departement
+            renaloc.loc[i , 'commune'] = commune
+
+        if (' Urbain' in name) or (' Rural' in name) :
+            if ' Urbain' in name :
                 renaloc.loc[i ,'milieu'] = 'Urbain'
-            if (splitted[1] == ' Rural') :
+            if ' Rural' in name :
                 renaloc.loc[i, 'milieu'] = 'Rural'
+
             if (level == 'Region'):
                 renaloc.loc[i , 'region'] = region
-
                 renaloc.loc[i , 'level'] = level
             if (level == 'Departement') :
                 renaloc.loc[i , 'region'] = region
@@ -120,26 +139,22 @@ for i in range(1,len(renaloc)) :
                 renaloc.loc[i , 'region'] = region
                 renaloc.loc[i , 'departement'] = departement
                 renaloc.loc[i , 'level'] = level
-
             if (level == 'Ville') :
                 renaloc.loc[i , 'region'] = region
                 renaloc.loc[i , 'departement'] = departement
-                if 'ARRONDISSEMENT' in name :
-                    commune = name.split(' ')[1]
-                    renaloc.loc[i , 'commune'] = commune
-                    renaloc.loc[i , 'level'] = 'commune'
-                else :
-                    renaloc.loc[i , 'commune'] = commune
-                    renaloc.loc[i , 'level'] = 'localite'
+                renaloc.loc[i , 'level'] = level
 
-        else :
-            renaloc.loc[i , 'level'] = 'Localite'
-            renaloc.loc[i , 'region'] = region
-            renaloc.loc[i , 'departement'] = departement
-            renaloc.loc[i , 'commune'] = commune
+
+
     except (RuntimeError, TypeError, NameError , AttributeError):
         pass
 
+
+## Taking out some special characters
+renaloc['region'] = renaloc['region'].str.replace('\r|\n|:' , '').str.strip()
+renaloc['departement'] = renaloc['departement'].str.replace('\r|\n|:' , '').str.strip()
+renaloc['commune'] = renaloc['commune'].str.replace('\r|\n|:|Rural' , '').str.strip()
+renaloc['locality'] = renaloc['locality'].str.replace('\r|\n|:' , '').str.strip()
 
 ## Function to convert GPS coordinates into Lat / long
 ## Note : this is ad hoc for GPS coordinates in Niger (ie all GPS coordinates are North East)
@@ -185,11 +200,6 @@ def float_all(data):
 
     return data
 
-## Taking out some special characters
-renaloc['departement'] = renaloc['departement'].str.replace('\r' , '')
-renaloc['commune'] = renaloc['commune'].str.replace('\r|\n' , '')
-renaloc['locality'] = renaloc['locality'].str.replace('\r' , '')
-
 ## Now going through all loaded data and parsing coordinates and putting all variables into numeric
 renaloc['longitude'] = renaloc['latitude'] = ''
 num_variables = ['hommes' , 'femmes' , 'menages' , 'menages_agricoles' , 'population']
@@ -213,12 +223,6 @@ for i in range(len(renaloc)):
         except (IndexError) :
             print('Index Error at ' + str(i))
 
-
-
-
-renaloc['region'] = renaloc.region.str.strip()
-renaloc['commune'] = renaloc.commune.str.strip()
-renaloc['departement'] = renaloc.departement.str.strip()
 
 renaloc.loc[(renaloc['commune'] == 'KORE') & (renaloc['region'] == 'DOSSO') , 'commune'] = "KORE MAIROUA"
 renaloc.loc[(renaloc['commune'] == 'GUIDAN') & (renaloc['region'] == 'MARADI') , 'commune'] = "GUIDAN AMOUMOUNE"
