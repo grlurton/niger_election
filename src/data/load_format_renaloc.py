@@ -249,15 +249,10 @@ communes_listing = pd.read_csv('data/processed/org_units_listing.csv')
 
 del communes_listing['Unnamed: 0']
 
-renaloc_commune = pd.merge(renaloc , communes_listing ,
+renaloc_full = pd.merge(renaloc , communes_listing ,
                             left_on = ['region' , 'commune'] ,
                             right_on = ['NOM_REGION' , 'NOM_COMMUNE'] ,
-                            how = 'inner')
+                            how = 'left')
 
-## Keeping only data with geolocation
-geolocalized_data = renaloc[~(renaloc.longitude == '')]
-geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv')
-
-## Other output for localities only
-locality_data = renaloc[renaloc.level == 'Localite']
-locality_data.to_csv('data/processed/renaloc_localities.csv')
+## Outputting the full data
+renaloc_full.to_csv('data/processed/renaloc_full.csv')
