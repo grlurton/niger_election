@@ -244,6 +244,16 @@ renaloc.loc[(renaloc['commune'] == 'KOURFEYE') & (renaloc['region'] == 'TILLABER
 renaloc.loc[(renaloc['commune'] == 'OURO') & (renaloc['region'] == 'TILLABERI') , 'commune'] = "OURO GUELADJO"
 renaloc.loc[(renaloc['commune'] == 'ARRONDISSEMENT  3') , 'commune'] = "ARRONDISSEMENT 3"
 
+## Adding Unique IDs
+communes_listing = pd.read_csv('data/processed/org_units_listing.csv')
+
+del communes_listing['Unnamed: 0']
+
+renaloc_commune = pd.merge(renaloc , communes_listing ,
+                            left_on = ['region' , 'commune'] ,
+                            right_on = ['NOM_REGION' , 'NOM_COMMUNE'] ,
+                            how = 'inner')
+
 ## Keeping only data with geolocation
 geolocalized_data = renaloc[~(renaloc.longitude == '')]
 geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv')
