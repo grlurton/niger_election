@@ -62,3 +62,12 @@ with open('data/processed/communes_gps.json', 'w') as outfile:
     json.dump(out, outfile)
 
 communes_listing.to_csv('data/processed/org_units_listing.csv' , index = False )
+
+###############################
+## Add gps_ids to voters' data
+
+## Loading data from electoral lists
+data_electeurs = pd.read_csv('data/processed/voters_list.csv'  , encoding = "ISO-8859-1")
+gps_ids = communes_listing.loc[:, ['ID_COMMUNE' , 'gps_name' , 'gps_ID']]
+data_electeurs = pd.merge(data_electeurs , gps_ids , on = 'ID_COMMUNE' , how = 'left')
+data_electeurs.to_csv('data/processed/voters_list.csv' , index = False )
