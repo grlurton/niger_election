@@ -65,4 +65,4 @@ merged_data = pd.merge(left = merged_data , right = prop_women ,
 
 
 ## Output the resulting data
-merged_data.to_csv('data/processed/commune_collapsed_matched.csv')
+merged_data.to_csv('data/processed/commune_collapsed_matched.csv' , index = False)

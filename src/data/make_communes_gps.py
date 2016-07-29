@@ -61,4 +61,4 @@ for i in range(len(communes_listing)) :
 with open('data/processed/communes_gps.json', 'w') as outfile:
     json.dump(out, outfile)
 
-communes_listing.to_csv('data/processed/org_units_listing.csv' , index = False        )
+communes_listing.to_csv('data/processed/org_units_listing.csv' , index = False )

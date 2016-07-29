@@ -247,12 +247,10 @@ renaloc.loc[(renaloc['commune'] == 'ARRONDISSEMENT  3') , 'commune'] = "ARRONDIS
 ## Adding Unique IDs
 communes_listing = pd.read_csv('data/processed/org_units_listing.csv')
 
-del communes_listing['Unnamed: 0']
-
 renaloc_full = pd.merge(renaloc , communes_listing ,
                             left_on = ['region' , 'commune'] ,
                             right_on = ['NOM_REGION' , 'NOM_COMMUNE'] ,
                             how = 'left')
 
 ## Outputting the full data
-renaloc_full.to_csv('data/processed/renaloc_full.csv')
+renaloc_full.to_csv('data/processed/renaloc_full.csv' , index = False)

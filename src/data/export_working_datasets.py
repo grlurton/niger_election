@@ -12,8 +12,8 @@ renaloc = pd.read_csv('data/processed/renaloc_full.csv' , encoding = "ISO-8859-1
 
 ## Keeping only data with geolocation
 geolocalized_data = renaloc[pd.isnull(renaloc.longitude) == False]
-geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv')
+geolocalized_data.to_csv('data/processed/renaloc_geolocalized.csv' , index = False)
 
 ## Other output for localities only
 locality_data = renaloc[renaloc.level == 'Localite']
-locality_data.to_csv('data/processed/renaloc_localities.csv')
+locality_data.to_csv('data/processed/renaloc_localities.csv' , index = False)

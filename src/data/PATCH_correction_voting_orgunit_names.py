@@ -2,6 +2,7 @@
 
 ## Loading Relevant libraries
 import pandas as pd
+import os as os
 
 ## Setting working directory
 os.chdir('c://users/grlurton/documents/niger_election_data')
@@ -34,5 +35,5 @@ data_electeurs = correct_communes_names(data_electeurs)
 full_data = pd.merge(communes_listing , departements_listing , on = 'ID_DEPART' , how = 'inner')
 full_data = pd.merge(full_data , regions_listing , on = 'ID_REGION' , how = 'inner')
 
-full_data.to_csv('data/processed/org_units_listing.csv')
-data_electeurs.to_csv('data/processed/voters_list.csv')
+full_data.to_csv('data/processed/org_units_listing.csv' , index = False)
+data_electeurs.to_csv('data/processed/voters_list.csv' , index = False)
