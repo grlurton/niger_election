@@ -19,6 +19,11 @@ data_electeurs = pd.read_csv('data/processed/voters_list.csv'  , encoding = "ISO
 ## Droping data for electors from the Diaspora
 data_electeurs = data_electeurs[~(data_electeurs['NOM_REGION'] == 'DIASPORA')]
 
+
+
+data_electeurs[data_electeurs.NOM_REGION == 'NIAMEY'].head()
+renaloc.head()
+
 ## Compute population in each data source and merge sources
 def sum_population(data):
     return data.population.sum(skipna = True)
