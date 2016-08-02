@@ -13,6 +13,8 @@ os.chdir('c://users/grlurton/documents/niger_election_data')
 
 data = pd.read_csv('data/processed/commune_collapsed_matched.csv')
 
+len(data)
+
 y = np.asarray(data.population_census)
 
 x_cat = data[['region']].T.to_dict().values()
@@ -20,6 +22,8 @@ v = DictVectorizer(sparse=False)
 x_cat = v.fit_transform(x_cat)
 
 x_train = np.hstack((data[['population_voting_list' , 'mean_age']] , x_cat ))
+
+len(data)
 
 ## Linear Regression
 
