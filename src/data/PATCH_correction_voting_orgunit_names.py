@@ -20,17 +20,18 @@ store_electeurs.close()
 del communes_listing['N_COMMUNE'] , communes_listing['Unnamed: 0'] , departements_listing['N_DEPART'] , departements_listing['Unnamed: 0'] , regions_listing['Unnamed: 0']  , data_electeurs['N_COMMUNE'] , data_electeurs['N_DEPART']  , data_electeurs['N_BUREAU']
 
 
-def correct_communes_names(data) :
+def correct_communes_names(data ,dep = False) :
     data.loc[data['NOM_COMMUNE'].isin(['TIBIRI (DOUTCHI)' , 'TIBIRI (MARADI)']), 'NOM_COMMUNE'] = 'TIBIRI'
     data.loc[data['NOM_COMMUNE'].isin(['GANGARA (AGUIE)' , 'GANGARA (TANOUT)']), 'NOM_COMMUNE'] = 'GANGARA'
     data.loc[data['NOM_COMMUNE'].isin(['MARADI ARRONDISSEMENT 1']), 'NOM_COMMUNE'] = 'ARRONDISSEMENT 1'
     data.loc[data['NOM_COMMUNE'].isin(['MARADI ARRONDISSEMENT 2']), 'NOM_COMMUNE'] = 'ARRONDISSEMENT 2'
     data.loc[data['NOM_COMMUNE'].isin(['MARADI ARRONDISSEMENT 3']), 'NOM_COMMUNE'] = 'ARRONDISSEMENT 3'
+    if (dep == True) :
+        data.loc[data['NOM_DEPART'].isin(['TIBIRI (DOUTCHI)']), 'NOM_DEPART'] = 'TIBIRI'
     return data
 
-
 communes_listing = correct_communes_names(communes_listing)
-data_electeurs = correct_communes_names(data_electeurs)
+data_electeurs = correct_communes_names(data_electeurs , dep = True)
 
 full_data = pd.merge(communes_listing , departements_listing , on = 'ID_DEPART' , how = 'inner')
 full_data = pd.merge(full_data , regions_listing , on = 'ID_REGION' , how = 'inner')

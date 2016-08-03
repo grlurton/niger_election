@@ -240,6 +240,7 @@ renaloc.loc[(renaloc['commune'] == 'KOURFEYE') & (renaloc['region'] == 'TILLABER
 renaloc.loc[(renaloc['commune'] == 'OURO') & (renaloc['region'] == 'TILLABERI') , 'commune'] = "OURO GUELADJO"
 renaloc.loc[(renaloc['commune'] == 'ARRONDISSEMENT  3') , 'commune'] = "ARRONDISSEMENT 3"
 renaloc.loc[(renaloc['commune'].isin(['KAO' , 'TCHINTABARADEN'])) , 'departement'] = "TCHINTABARADEN"
+renaloc.loc[((renaloc['departement'] == 'BIRNI') & (renaloc['region'] == 'TAHOUA') ) , 'departement'] = "TCHINTABARADEN"
 
 
 ## Adding Unique IDs
