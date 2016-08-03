@@ -18,4 +18,4 @@ premier_tour_departement['departement' \
 out = premier_tour_departement.loc[: , ['Commune' , 'departement' , 'Suffrages exprimés valables']]
 out.columns  = ['commune' , 'departement' , 'voting']
 
-out.to_csv('data/interim/voting_first_round.csv')
+out.to_csv('data/interim/voting_first_round.csv'  , index = False)

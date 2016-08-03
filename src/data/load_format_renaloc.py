@@ -77,9 +77,6 @@ renaloc.loc[(akoubounou[0] - 1),'locality'] = 'COMMUNE DE : AKOUBOUNOU'
 
 ## Transforming document hierarchical structure into covariables for Geographical zones
 renaloc['level']  = renaloc['region'] = renaloc['departement'] = renaloc['commune'] = renaloc['milieu'] =         region = departement = commune = nom_sup = level = ''
-
-
-
 for i in range(1,len(renaloc)) :
     u = renaloc.iloc[i]
     name = u.locality
@@ -160,7 +157,6 @@ for i in range(1,len(renaloc)) :
     except (RuntimeError, TypeError, NameError , AttributeError):
         pass
 
-len(renaloc)
 
 ## Taking out some special characters
 renaloc['region'] = renaloc['region'].str.replace('\r|\n|:' , '').str.strip()
@@ -243,6 +239,8 @@ renaloc.loc[(renaloc['commune'] == 'GALMA') & (renaloc['region'] == 'TAHOUA') , 
 renaloc.loc[(renaloc['commune'] == 'KOURFEYE') & (renaloc['region'] == 'TILLABERI') , 'commune'] = "KOURFEYE CENTRE"
 renaloc.loc[(renaloc['commune'] == 'OURO') & (renaloc['region'] == 'TILLABERI') , 'commune'] = "OURO GUELADJO"
 renaloc.loc[(renaloc['commune'] == 'ARRONDISSEMENT  3') , 'commune'] = "ARRONDISSEMENT 3"
+renaloc.loc[(renaloc['commune'].isin(['KAO' , 'TCHINTABARADEN'])) , 'departement'] = "TCHINTABARADEN"
+
 
 ## Adding Unique IDs
 communes_listing = pd.read_csv('data/processed/org_units_listing.csv')
