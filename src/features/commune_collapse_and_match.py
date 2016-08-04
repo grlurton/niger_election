@@ -64,9 +64,8 @@ merged_data = pd.merge(left = merged_data , right = prop_women ,
 ## Adding participation
 participation_data = pd.read_csv('data/interim/voting_first_round.csv'  , encoding = "ISO-8859-1")
 
-out = pd.merge(merged_data , participation_data ,
+merged_data = pd.merge(merged_data , participation_data ,
                 on = ['commune' , 'departement'])
-participation_data.head()
 
 ## Output the resulting data
 merged_data.to_csv('data/processed/commune_collapsed_matched.csv' , index = False)
