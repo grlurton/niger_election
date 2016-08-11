@@ -5,6 +5,8 @@ import json
 import warnings
 import os as os
 import numpy as np
+import pickle
+
 
 from scipy.interpolate import UnivariateSpline
 
@@ -96,3 +98,5 @@ def bootstrap_spline(voters_data = voters_data, level = level , n_rep = 1000):
     return out
 
 boot_splines = voters_data.groupby(level).apply(bootstrap_spline)
+
+pickle.dump(boot_splines , open("data/processed/bootstraped_splines.p" , "wb"))
