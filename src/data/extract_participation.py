@@ -22,7 +22,7 @@ premier_tour_departement.loc[premier_tour_departement['Commune'].isin(['MARADI A
 
 
 ## getting everything out
-out = premier_tour_departement.loc[: , ['Commune' , 'departement' , 'Suffrages exprimés valables']]
-out.columns  = ['commune' , 'departement' , 'voting']
+out = premier_tour_departement.loc[: , ['Commune' , 'departement' , 'Suffrages exprimés valables' , 'Mahamadou Issoufou' , 'Hama Amadou' , 'Ibrahim Yacouba' , 'Seyni Omar' , 'Mahamane Ousmane']]
+out.columns  = ['commune' , 'departement' , 'voting'  , 'Mahamadou Issoufou' , 'Hama Amadou' , 'Ibrahim Yacouba' , 'Seyni Omar' , 'Mahamane Ousmane']
 
 out.to_csv('data/interim/voting_first_round.csv'  , index = False)
