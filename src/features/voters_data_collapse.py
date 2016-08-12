@@ -93,10 +93,21 @@ def sample_spline(voters_data , level):
 
 level = ['NOM_REGION' , 'NOM_DEPART' , 'NOM_COMMUNE']
 
-def bootstrap_spline(voters_data = voters_data, level = level , n_rep = 1000):
+def bootstrap_spline(voters_data = voters_data, level = level , n_rep = 200):
     out = Parallel(n_jobs=4, verbose=10 , backend = 'threading')(delayed(sample_spline)(voters_data , level) for i in range(n_rep))
     return out
 
 boot_splines = voters_data.groupby(level).apply(bootstrap_spline)
 
-pickle.dump(boot_splines , open("data/processed/bootstraped_splines.p" , "wb"))
+
+data_bootstrapped = pd.DataFrame(boot_splines[0][1]).T
+for i in range(len(boot_splines)):
+    commune = boot_splines[i]
+    dat = pd.DataFrame(commune[0]).T
+    for j in range(1 , len(commune)) :
+        if ~([i,j] == [0,1]) :
+            dat = dat.append(pd.DataFrame(commune[j]).T)
+    data_bootstrapped = data_bootstrapped.append(dat)
+
+
+pickle.dump(data_bootstrapped , open("data/processed/bootstraped_splines.p" , "wb"))
