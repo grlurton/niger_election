@@ -36,5 +36,8 @@ data_electeurs = correct_communes_names(data_electeurs , dep = True)
 full_data = pd.merge(communes_listing , departements_listing , on = 'ID_DEPART' , how = 'inner')
 full_data = pd.merge(full_data , regions_listing , on = 'ID_REGION' , how = 'inner')
 
+full_data.colnames = ['commune_ID' , 'departement_ID' , 'commune' , 'region_ID' , 'departement' , 'region']
+data_electeurs.columns = ['region_ID' , 'region' , 'departement_ID' , 'departement' , 'commune_ID' , 'commune' , 'bureau_ID' , 'bureau'] + list(data_electeurs.columns[8:])
+
 full_data.to_csv('data/processed/org_units_listing.csv' , index = False)
 data_electeurs.to_csv('data/processed/voters_list.csv' , index = False)
