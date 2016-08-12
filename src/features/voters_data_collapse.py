@@ -94,6 +94,9 @@ def sample_spline(voters_data , level):
 level = ['NOM_REGION' , 'NOM_DEPART' , 'NOM_COMMUNE']
 
 def bootstrap_spline(voters_data = voters_data, level = level , n_rep = 200):
+    """
+    Wrapper to get the bootstrapped splines
+    """
     out = Parallel(n_jobs=4, verbose=10 , backend = 'threading')(delayed(sample_spline)(voters_data , level) for i in range(n_rep))
     return out
 
@@ -110,4 +113,23 @@ for i in range(len(boot_splines)):
     data_bootstrapped = data_bootstrapped.append(dat)
 
 
-pickle.dump(data_bootstrapped , open("data/processed/bootstraped_splines.p" , "wb"))
+def get_spline_95IC(out_spline):
+    """
+    Function to get the 95% Confidence interval from splined age structure
+    """
+    ext5 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.05, axis=0, numeric_only=True, interpolation='linear')
+    ext95 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.95, axis=0, numeric_only=True, interpolation='linear')
+
+    spl5 = pd.DataFrame(list(out_spline['splinned'])).quantile(q=0.05, axis=0, numeric_only=True, interpolation='linear')
+    spl95 = pd.DataFrame(list(out_spline['splinned'])).quantile(q=0.95, axis=0, numeric_only=True, interpolation='linear')
+    return ([ext5 , ext95] , [spl5 , spl95])
+
+### Computing IC95 for splined age structures
+level = ['region' , 'departement' , 'commune']
+ICSplined = data_bootstrapped.groupby(level).apply(get_spline_95IC)
+ICSplined = ICSplined.reset_index()
+ICSplined.columns = level + ['IC95']
+
+out = {'data_bootstrapped':data_bootstrapped , 'confidence_intervals':ICSplined}
+
+pickle.dump(out , open("data/processed/bootstraped_splines.p" , "wb"))
