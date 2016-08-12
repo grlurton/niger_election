@@ -76,7 +76,7 @@ akoubounou = renaloc[renaloc.locality == 'AKOUBOUNOU: Rural'].index
 renaloc.loc[(akoubounou[0] - 1),'locality'] = 'COMMUNE DE : AKOUBOUNOU'
 
 ## Transforming document hierarchical structure into covariables for Geographical zones
-renaloc['level']  = renaloc['region'] = renaloc['departement'] = renaloc['commune'] = renaloc['milieu'] =         region = departement = commune = nom_sup = level = ''
+renaloc['level']  = renaloc['region'] = renaloc['departement'] = renaloc['commune'] = renaloc['milieu'] =         region = departement = commune = level = ''
 for i in range(1,len(renaloc)) :
     u = renaloc.iloc[i]
     name = u.locality
@@ -247,8 +247,7 @@ renaloc.loc[((renaloc['departement'] == 'BIRNI') & (renaloc['region'] == 'TAHOUA
 communes_listing = pd.read_csv('data/processed/org_units_listing.csv')
 
 renaloc_full = pd.merge(renaloc , communes_listing ,
-                            left_on = ['region' , 'commune'] ,
-                            right_on = ['NOM_REGION' , 'NOM_COMMUNE'] ,
+                            on = ['region' , 'commune'] ,
                             how = 'left')
 
 ## Outputting the full data

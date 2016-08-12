@@ -15,7 +15,7 @@ with open('data/dictionnaries/gps_communes_recodes.json') as json_data:
     json_data.close()
 
 communes_listing = pd.read_csv('data/processed/org_units_listing.csv' , encoding = "ISO-8859-1")
-communes_listing = communes_listing[~(communes_listing.NOM_REGION == 'DIASPORA')]
+communes_listing = communes_listing[~(communes_listing.region == 'DIASPORA')]
 
 ## Get accents out
 carto_commune.nom = carto_commune.nom.str.replace('É','E')
@@ -32,9 +32,9 @@ communes_listing['gps_name'] = communes_listing['gps_ID'] = ''
 out = {}
 mem = []
 for i in range(len(communes_listing)) :
-    commune = communes_listing.NOM_COMMUNE[i]
-    region = communes_listing.NOM_REGION[i]
-    commune_id = communes_listing.ID_COMMUNE[i]
+    commune = communes_listing.commune[i]
+    region = communes_listing.region[i]
+    commune_id = communes_listing.commune_ID[i]
     gps = carto_commune[(carto_commune.nom == commune) & (carto_commune.region == region) ]
     if len(gps) >= 1 :
         for u in list(gps.index)  :

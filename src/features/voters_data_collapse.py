@@ -20,7 +20,7 @@ os.chdir('c://users/grlurton/documents/niger_election_data')
 
 ## Voters data
 voters_data = pd.read_csv('data/processed/voters_list.csv' , encoding = "ISO-8859-1")
-voters_data = voters_data[(voters_data.age >= 18) & (voters_data.NOM_REGION != 'DIASPORA')]
+voters_data = voters_data[(voters_data.age >= 18) & (voters_data.region != 'DIASPORA')]
 
 
 def age_distrib(data) :
@@ -91,7 +91,7 @@ def sample_spline(voters_data , level):
     u = get_spline_from_sample(sample , level)
     return u
 
-level = ['NOM_REGION' , 'NOM_DEPART' , 'NOM_COMMUNE']
+level = ['region' , 'departement' , 'commune']
 
 def bootstrap_spline(voters_data = voters_data, level = level , n_rep = 200):
     """
