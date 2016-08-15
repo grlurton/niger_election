@@ -93,25 +93,27 @@ def sample_spline(voters_data , level):
 
 level = ['region' , 'departement' , 'commune']
 
-def bootstrap_spline(voters_data = voters_data, level = level , n_rep = 200):
+def bootstrap_spline(voters_data = voters_data, level = level , n_rep = 20):
     """
     Wrapper to get the bootstrapped splines
     """
     out = Parallel(n_jobs=4, verbose=10 , backend = 'threading')(delayed(sample_spline)(voters_data , level) for i in range(n_rep))
     return out
 
-boot_splines = voters_data.groupby(level).apply(bootstrap_spline)
 
-
-data_bootstrapped = pd.DataFrame(boot_splines[0][1]).T
-for i in range(len(boot_splines)):
-    commune = boot_splines[i]
-    dat = pd.DataFrame(commune[0]).T
-    for j in range(1 , len(commune)) :
-        if ~([i,j] == [0,1]) :
-            dat = dat.append(pd.DataFrame(commune[j]).T)
-    data_bootstrapped = data_bootstrapped.append(dat)
-
+def boot_splines_to_dataframe(boot_splines):
+    """
+    Taking bootstraped splines and making them into dataframe
+    """
+    data_bootstrapped = pd.DataFrame(boot_splines[0][1]).T
+    for i in range(len(boot_splines)):
+        commune = boot_splines[i]
+        dat = pd.DataFrame(commune[0]).T
+        for j in range(1 , len(commune)) :
+            if ~([i,j] == [0,1]) :
+                dat = dat.append(pd.DataFrame(commune[j]).T)
+                data_bootstrapped = data_bootstrapped.append(dat)
+    return data_bootstrapped
 
 def get_spline_95IC(out_spline):
     """
@@ -124,12 +126,20 @@ def get_spline_95IC(out_spline):
     spl95 = pd.DataFrame(list(out_spline['splinned'])).quantile(q=0.95, axis=0, numeric_only=True, interpolation='linear')
     return ([ext5 , ext95] , [spl5 , spl95])
 
-### Computing IC95 for splined age structures
+####################
+### Running all this
+
 level = ['region' , 'departement' , 'commune']
+
+age_structure = get_age_distribution(voters_data , level)
+boot_splines = voters_data.groupby(level).apply(bootstrap_spline)
+data_bootstrapped = boot_splines_to_dataframe(boot_splines)
+
+### Computing IC95 for splined age structures
 ICSplined = data_bootstrapped.groupby(level).apply(get_spline_95IC)
 ICSplined = ICSplined.reset_index()
 ICSplined.columns = level + ['IC95']
 
-out = {'data_bootstrapped':data_bootstrapped , 'confidence_intervals':ICSplined}
+out = {'data_bootstrapped':data_bootstrapped , 'confidence_intervals':ICSplined , 'age_structure':age_structure}
 
 pickle.dump(out , open("data/processed/bootstraped_splines.p" , "wb"))
