@@ -1,27 +1,26 @@
 # coding: utf-8
 
 import pandas as pd
-import json
-import warnings
 import os as os
 import numpy as np
 import pickle
 
-
 from scipy.interpolate import UnivariateSpline
 
-## For parralell computing
-from joblib import Parallel, delayed
+from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool
 
-warnings.filterwarnings('ignore')
+
+#warnings.filterwarnings('ignore')
 
 ## Setting working directory
-os.chdir('c://users/grlurton/documents/niger_election_data')
+os.chdir('niger_election_data')
 
 ## Voters data
 voters_data = pd.read_csv('data/processed/voters_list.csv' , encoding = "ISO-8859-1")
-voters_data = voters_data[(voters_data.age >= 18) & (voters_data.region != 'DIASPORA')]
 
+age_adulte = 18
+voters_data = voters_data[(voters_data.age >= age_adulte) & (voters_data.region != 'DIASPORA')]
 
 def age_distrib(data) :
     """
@@ -33,18 +32,6 @@ def age_distrib(data) :
     out.columns = ['age' , 'percentage']
     return out
 
-def get_age_distribution(data , level):
-    """
-    Function to get age distribution in data stratified by different levels
-    """
-    out = data.groupby(level).apply(age_distrib).reset_index()
-    sort_order = level + ['age']
-    out = out.sort(sort_order, ascending=[1]*len(sort_order))
-    i = len(level)
-    lev_to_drop = 'level_' + str(i)
-    del out[lev_to_drop]
-    return out
-
 def spl_age(data):
     """
     Function to get spline of age from a distribution estimated with get_age_distribution
@@ -52,7 +39,7 @@ def spl_age(data):
     out = UnivariateSpline(data['age'] , data['percentage'])
     return out
 
-def impute_non_adulte(splines , age_adulte = 18):
+def impute_non_adulte(splines , age_adulte = age_adulte):
     """
     Imputing non adulte distributions in population smoothed from a spline
     """
@@ -62,81 +49,76 @@ def impute_non_adulte(splines , age_adulte = 18):
         'extrapol':list(splines(age_extrap))}
     return out
 
-def get_spline_from_sample(voters_data , level):
+def get_spline_from_sample(voters_data):
     """
     Wrapper function to get age distribution, spline it and impute non adults from a given sample
     """
-    age_dist = get_age_distribution(voters_data , level)
-    extrapolated_data = {}
-    splines = age_dist.groupby(level).apply(spl_age)
-    for region in list(splines.index.levels[0]) :
-        sp_reg = splines[region]
-        for departement in list(sp_reg.index.levels[0]) :
-            sp_reg_d = sp_reg[departement]
-            for commune in list(sp_reg_d.index) :
-                splinned = impute_non_adulte(splines[region][departement][commune])
-                extrapolated_data[region + '_' + commune] = {'commune' : commune ,
-                                                         'departement' : departement ,
-                                                         'region' : region ,
-                                                         'splinned': splinned['splined'] ,
-                                                         'extrapolated' : splinned['extrapol']}
+    sample = voters_data.sample(n = len(voters_data) , replace = True)
+    age_dist = age_distrib(sample)
+    splines = spl_age(age_dist)
+    extrapolated_data = impute_non_adulte(splines)
     return extrapolated_data
 
-def sample_spline(voters_data , level):
-    """
-    Wrapper function to draw sample and return splines smoothed curve and extrapolation
-    """
-    sample = np.random.choice(len(voters_data), len(voters_data) , replace = True)
-    sample = voters_data.iloc[sample]
-    u = get_spline_from_sample(sample , level)
-    return u
-
-level = ['region' , 'departement' , 'commune']
-
-def bootstrap_spline(voters_data = voters_data, level = level , n_rep = 20):
+def spline_on_level(i):
     """
     Wrapper to get the bootstrapped splines
     """
-    out = Parallel(n_jobs=4, verbose=10 , backend = 'threading')(delayed(sample_spline)(voters_data , level) for i in range(n_rep))
+    print(i)
+    out = voters_data.groupby(levels).apply(get_spline_from_sample)
     return out
 
 
-def boot_splines_to_dataframe(boot_splines):
+## Getting bootstrapped splines
+
+n_processes = 48
+n_replications = 250
+levels= ['region' , 'departement' ,  'commune']
+
+#pool = Pool(n_processes)
+threadPool = ThreadPool(n_processes)
+boot_splines = threadPool.map(spline_on_level , list(range(n_replications)))
+
+def boot_splines_to_dataframe(boot_splines , levels):
     """
     Taking bootstraped splines and making them into dataframe
     """
-    data_bootstrapped = pd.DataFrame(boot_splines[0][1]).T
-    for i in range(len(boot_splines)):
-        commune = boot_splines[i]
-        dat = pd.DataFrame(commune[0]).T
-        for j in range(1 , len(commune)) :
-            if ~([i,j] == [0,1]) :
-                dat = dat.append(pd.DataFrame(commune[j]).T)
-                data_bootstrapped = data_bootstrapped.append(dat)
-    return data_bootstrapped
+    out = pd.DataFrame(boot_splines[0].reset_index())
+    for i in range(1, len(boot_splines)):
+        out = out.append(pd.DataFrame(boot_splines[i].reset_index()))
+    out.columns = levels + ['data']
+    out = out.reset_index()
+    out['splined'] = out['extrapolated'] = ''
+    #for j in range(len(out)) :
+    #    print(len([out.loc[j , 'data']['splined']]))
+    #    print(len(out.iloc[j]['splined']))
+    #    out.loc[j , 'splined'] = [out.loc[j , 'data']['splined']]
+    #    out.loc[j , 'extrapolated'] = [out.loc[j , 'data']['extrapol']]
+    #del out['data']
+    return out
+
+bootstraped_splines = boot_splines_to_dataframe(test , levels)
 
 def get_spline_95IC(out_spline):
     """
-    Function to get the 95% Confidence interval from splined age structure
+    Function to get the 95 Confidence interval from splined age structure
     """
-    ext5 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.05, axis=0, numeric_only=True, interpolation='linear')
-    ext95 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.95, axis=0, numeric_only=True, interpolation='linear')
-
-    spl5 = pd.DataFrame(list(out_spline['splinned'])).quantile(q=0.05, axis=0, numeric_only=True, interpolation='linear')
-    spl95 = pd.DataFrame(list(out_spline['splinned'])).quantile(q=0.95, axis=0, numeric_only=True, interpolation='linear')
+    ext5 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.05, axis=0, numeric_only=True)
+    ext95 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.95, axis=0, numeric_only=True)
+    spl5 = pd.DataFrame(list(out_spline['splined'])).quantile(q=0.05, axis=0, numeric_only=True)
+    spl95 = pd.DataFrame(list(out_spline['splined'])).quantile(q=0.95, axis=0, numeric_only=True)
     return ([ext5 , ext95] , [spl5 , spl95])
+
+ICSplined = bootstraped_splines.groupby(levels).apply(get_spline_95IC)
 
 ####################
 ### Running all this
 
-level = ['region' , 'departement' , 'commune']
-
 age_structure = get_age_distribution(voters_data , level)
 boot_splines = voters_data.groupby(level).apply(bootstrap_spline)
-data_bootstrapped = boot_splines_to_dataframe(boot_splines)
+data_bootstrapped = boot_splines_to_dataframe(test)
 
 ### Computing IC95 for splined age structures
-ICSplined = data_bootstrapped.groupby(level).apply(get_spline_95IC)
+ICSplined = bootstraped_splines.groupby(level).apply(get_spline_95IC)
 ICSplined = ICSplined.reset_index()
 ICSplined.columns = level + ['IC95']
 
