@@ -14,7 +14,7 @@ from multiprocessing.pool import ThreadPool
 #warnings.filterwarnings('ignore')
 
 ## Setting working directory
-os.chdir('niger_election_data')
+os.chdir('h://niger_election_data')
 
 ## Voters data
 voters_data = pd.read_csv('data/processed/voters_list.csv' , encoding = "ISO-8859-1")
@@ -70,8 +70,8 @@ def spline_on_level(i):
 
 ## Getting bootstrapped splines
 
-n_processes = 48
-n_replications = 250
+n_processes = 4
+n_replications = 4
 levels= ['region' , 'departement' ,  'commune']
 
 #pool = Pool(n_processes)
@@ -87,41 +87,39 @@ def boot_splines_to_dataframe(boot_splines , levels):
         out = out.append(pd.DataFrame(boot_splines[i].reset_index()))
     out.columns = levels + ['data']
     out = out.reset_index()
-    out['splined'] = out['extrapolated'] = ''
-    #for j in range(len(out)) :
-    #    print(len([out.loc[j , 'data']['splined']]))
-    #    print(len(out.iloc[j]['splined']))
-    #    out.loc[j , 'splined'] = [out.loc[j , 'data']['splined']]
-    #    out.loc[j , 'extrapolated'] = [out.loc[j , 'data']['extrapol']]
-    #del out['data']
+    out['splined'] = out['extrapolated'] = 'uu'
+    for j in range(len(out)) :
+        out.set_value(j, 'splined', out.loc[j , 'data']['splined'])
+        out.set_value(j, 'extrapolated', out.loc[j , 'data']['extrapol'])
     return out
 
-bootstraped_splines = boot_splines_to_dataframe(test , levels)
+bootstrapedsplined = boot_splines_to_dataframe(boot_splines , levels)
 
 def get_spline_95IC(out_spline):
     """
     Function to get the 95 Confidence interval from splined age structure
     """
-    ext5 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.05, axis=0, numeric_only=True)
-    ext95 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.95, axis=0, numeric_only=True)
-    spl5 = pd.DataFrame(list(out_spline['splined'])).quantile(q=0.05, axis=0, numeric_only=True)
-    spl95 = pd.DataFrame(list(out_spline['splined'])).quantile(q=0.95, axis=0, numeric_only=True)
+    ext5 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.025, axis=0, numeric_only=True)
+    ext95 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.975, axis=0, numeric_only=True)
+    spl5 = pd.DataFrame(list(out_spline['splined'])).quantile(q=0.025, axis=0, numeric_only=True)
+    spl95 = pd.DataFrame(list(out_spline['splined'])).quantile(q=0.975, axis=0, numeric_only=True)
     return ([ext5 , ext95] , [spl5 , spl95])
 
-ICSplined = bootstraped_splines.groupby(levels).apply(get_spline_95IC)
+#ICSplined = bootstraped_splines.groupby(levels).apply(get_spline_95IC)
 
 ####################
 ### Running all this
 
-age_structure = get_age_distribution(voters_data , level)
-boot_splines = voters_data.groupby(level).apply(bootstrap_spline)
-data_bootstrapped = boot_splines_to_dataframe(test)
+#age_structure = get_age_distribution(voters_data , level)
+#boot_splines = voters_data.groupby(levels).apply(bootstrapedsplined)
+#data_bootstrapped = boot_splines_to_dataframe(test)
 
 ### Computing IC95 for splined age structures
-ICSplined = bootstraped_splines.groupby(level).apply(get_spline_95IC)
+ICSplined = bootstrapedsplined.groupby(levels).apply(get_spline_95IC)
 ICSplined = ICSplined.reset_index()
-ICSplined.columns = level + ['IC95']
+ICSplined.columns = levels + ['IC95']
 
-out = {'data_bootstrapped':data_bootstrapped , 'confidence_intervals':ICSplined , 'age_structure':age_structure}
+out = {#'data_bootstrapped':data_bootstrapped ,
+'confidence_intervals':ICSplined}# , 'age_structure':age_structure}
 
 pickle.dump(out , open("data/processed/bootstraped_splines.p" , "wb"))
