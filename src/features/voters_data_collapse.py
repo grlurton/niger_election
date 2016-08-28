@@ -77,7 +77,8 @@ def boot_splines_to_dataframe(boot_splines , levels):
         out = pd.DataFrame(boot_splines[0].reset_index())
         for i in range(1, len(boot_splines)):
             out = out.append(pd.DataFrame(boot_splines[i].reset_index()))
-
+    else :
+        out = boot_splines.reset_index()
     out.columns = levels + ['data']
     out = out.reset_index()
     out['splined'] = out['extrapolated'] = 'uu'
@@ -93,7 +94,9 @@ def boot_splines_to_dataframe(boot_splines , levels):
 
 levels= ['region' , 'departement' ,  'commune']
 age_structure = voters_data.groupby(levels).apply(age_distrib)
-t = voters_data.groupby(levels).apply(get_spline_from_sample)
+age_structure = age_structure.reset_index()
+del age_structure['level_3']
+age_structure.columns = levels + ['age' , 'percentage']
 
 splined_data = boot_splines_to_dataframe(voters_data.groupby(levels).apply(get_spline_from_sample) , levels)
 
@@ -128,6 +131,3 @@ ICSplined.columns = levels + ['IC95']
 out = {'splined_data':splined_data , 'confidence_intervals':ICSplined , 'age_structure':age_structure}
 
 pickle.dump(out , open("data/processed/bootstraped_splines.p" , "wb"))
-
-
-#tries = pickle.load(open("data/processed/bootstraped_splines.p" , "rb"))
