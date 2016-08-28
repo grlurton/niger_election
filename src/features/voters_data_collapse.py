@@ -7,19 +7,21 @@ import pickle
 
 from scipy.interpolate import UnivariateSpline
 
-from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
 
-
-#warnings.filterwarnings('ignore')
-
 ## Setting working directory
-os.chdir('h://niger_election_data')
+
+if os.name == 'nt':
+    os.chdir('h://niger_election_data')
+
+if os.name == 'posix':
+    os.chdir('niger_election_data')
+
 
 ## Voters data
 voters_data = pd.read_csv('data/processed/voters_list.csv' , encoding = "ISO-8859-1")
 
-age_adulte = 18
+age_adulte = 19
 voters_data = voters_data[(voters_data.age >= age_adulte) & (voters_data.region != 'DIASPORA')]
 
 def age_distrib(data) :
@@ -67,24 +69,15 @@ def spline_on_level(i):
     out = voters_data.groupby(levels).apply(get_spline_from_sample)
     return out
 
-
-## Getting bootstrapped splines
-
-n_processes = 4
-n_replications = 4
-levels= ['region' , 'departement' ,  'commune']
-
-#pool = Pool(n_processes)
-threadPool = ThreadPool(n_processes)
-boot_splines = threadPool.map(spline_on_level , list(range(n_replications)))
-
 def boot_splines_to_dataframe(boot_splines , levels):
     """
     Taking bootstraped splines and making them into dataframe
     """
-    out = pd.DataFrame(boot_splines[0].reset_index())
-    for i in range(1, len(boot_splines)):
-        out = out.append(pd.DataFrame(boot_splines[i].reset_index()))
+    if type(boot_splines) is list :
+        out = pd.DataFrame(boot_splines[0].reset_index())
+        for i in range(1, len(boot_splines)):
+            out = out.append(pd.DataFrame(boot_splines[i].reset_index()))
+
     out.columns = levels + ['data']
     out = out.reset_index()
     out['splined'] = out['extrapolated'] = 'uu'
@@ -92,6 +85,26 @@ def boot_splines_to_dataframe(boot_splines , levels):
         out.set_value(j, 'splined', out.loc[j , 'data']['splined'])
         out.set_value(j, 'extrapolated', out.loc[j , 'data']['extrapol'])
     return out
+
+####################
+### Getting structure for complete data
+
+### Getting
+
+levels= ['region' , 'departement' ,  'commune']
+age_structure = voters_data.groupby(levels).apply(age_distrib)
+t = voters_data.groupby(levels).apply(get_spline_from_sample)
+
+splined_data = boot_splines_to_dataframe(voters_data.groupby(levels).apply(get_spline_from_sample) , levels)
+
+## Getting bootstrapped splines
+
+n_processes = os.cpu_count() - 5
+n_replications = 250
+
+#pool = Pool(n_processes)
+threadPool = ThreadPool(n_processes)
+boot_splines = threadPool.map(spline_on_level , list(range(n_replications)))
 
 bootstrapedsplined = boot_splines_to_dataframe(boot_splines , levels)
 
@@ -103,23 +116,18 @@ def get_spline_95IC(out_spline):
     ext95 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.975, axis=0, numeric_only=True)
     spl5 = pd.DataFrame(list(out_spline['splined'])).quantile(q=0.025, axis=0, numeric_only=True)
     spl95 = pd.DataFrame(list(out_spline['splined'])).quantile(q=0.975, axis=0, numeric_only=True)
-    return ([ext5 , ext95] , [spl5 , spl95])
+    return {'extrapolation_5':ext5 , 'extrapolation_95':ext95 ,
+            'splining_5':spl5 , 'splining_95':spl95}
 
-#ICSplined = bootstraped_splines.groupby(levels).apply(get_spline_95IC)
-
-####################
-### Running all this
-
-#age_structure = get_age_distribution(voters_data , level)
-#boot_splines = voters_data.groupby(levels).apply(bootstrapedsplined)
-#data_bootstrapped = boot_splines_to_dataframe(test)
 
 ### Computing IC95 for splined age structures
 ICSplined = bootstrapedsplined.groupby(levels).apply(get_spline_95IC)
 ICSplined = ICSplined.reset_index()
 ICSplined.columns = levels + ['IC95']
 
-out = {#'data_bootstrapped':data_bootstrapped ,
-'confidence_intervals':ICSplined}# , 'age_structure':age_structure}
+out = {'splined_data':splined_data , 'confidence_intervals':ICSplined , 'age_structure':age_structure}
 
 pickle.dump(out , open("data/processed/bootstraped_splines.p" , "wb"))
+
+
+#tries = pickle.load(open("data/processed/bootstraped_splines.p" , "rb"))
