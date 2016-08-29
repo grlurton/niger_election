@@ -18,11 +18,16 @@ if os.name == 'posix':
     os.chdir('niger_election_data')
 
 
+## SETTING PARAMETERS
+age_adulte = 19
+
 ## Voters data
 voters_data = pd.read_csv('data/processed/voters_list.csv' , encoding = "ISO-8859-1")
-
-age_adulte = 19
 voters_data = voters_data[(voters_data.age >= age_adulte) & (voters_data.region != 'DIASPORA')]
+
+## Model data
+model_data = pd.read_csv('data/processed/commune_collapsed_matched.csv' , encoding = "ISO-8859-1")
+
 
 def age_distrib(data) :
     """
@@ -61,6 +66,20 @@ def get_spline_from_sample(voters_data):
     extrapolated_data = impute_non_adulte(splines)
     return extrapolated_data
 
+def get_full_model_data(bootstrap_sample , model_data , levels):
+    """
+    Getting the model data
+    """
+    imputed_voters = pd.merge(bootstrap_sample , N_Voters , on = levels , how = 'inner')
+
+
+
+
+
+
+
+### Running the models
+
 def spline_on_level(i):
     """
     Wrapper to get the bootstrapped splines
@@ -86,6 +105,15 @@ def boot_splines_to_dataframe(boot_splines , levels):
         out.set_value(j, 'splined', out.loc[j , 'data']['splined'])
         out.set_value(j, 'extrapolated', out.loc[j , 'data']['extrapol'])
     return out
+
+
+
+
+
+
+
+
+
 
 ####################
 ### Getting structure for complete data

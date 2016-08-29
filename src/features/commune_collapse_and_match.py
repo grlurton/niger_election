@@ -8,7 +8,11 @@ import os as os
 warnings.filterwarnings('ignore')
 
 ## Setting working directory
-os.chdir('c://users/grlurton/documents/niger_election_data')
+if os.name == 'nt':
+    os.chdir('h://niger_election_data')
+
+if os.name == 'posix':
+    os.chdir('niger_election_data')
 
 ## Loading data from Renaloc
 renaloc = pd.read_csv('data/processed/renaloc_localities.csv'  , encoding = "ISO-8859-1")
@@ -23,12 +27,9 @@ data_electeurs.gps_ID = data_electeurs.gps_ID.astype(str)
 def sum_population(data):
     return data.population.sum(skipna = True)
 
-def len_population(data) :
-    return len(data)
-
 pop_commune = renaloc.groupby([ 'region'  , 'departement' , 'gps_ID' , 'gps_name' , 'commune' ]).apply( sum_population ).reset_index()
 
-vote_commune = data_electeurs.groupby(['region' , 'departement' ,'gps_ID' , 'gps_name' , 'commune' ]).apply( len_population ).reset_index( )
+vote_commune = data_electeurs.groupby(['region' , 'departement' ,'gps_ID' , 'gps_name' , 'commune' ]).apply( len ).reset_index( )
 pop_commune.columns = vote_commune.columns = ['region' , 'departement'  , 'gps_ID' , 'gps_name' ,'commune' , 'population']
 #vote_commune.gps_ID = vote_commune.gps_ID.astype(str)
 merged_data = pd.merge(left = pop_commune , right = vote_commune ,
@@ -66,6 +67,8 @@ participation_data = pd.read_csv('data/interim/voting_first_round.csv'  , encodi
 
 merged_data = pd.merge(merged_data , participation_data ,
                 on = ['commune' , 'departement'])
+
+merged_data['urbain'] = list((merged_data['commune'].str[0:14] == 'ARRONDISSEMENT') | (merged_data['commune'] == merged_data['region']))
 
 ## Output the resulting data
 merged_data.to_csv('data/processed/commune_collapsed_matched.csv' , index = False)
