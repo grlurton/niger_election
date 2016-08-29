@@ -105,7 +105,6 @@ splined_data = boot_splines_to_dataframe(voters_data.groupby(levels).apply(get_s
 n_processes = os.cpu_count() - 5
 n_replications = 250
 
-#pool = Pool(n_processes)
 threadPool = ThreadPool(n_processes)
 boot_splines = threadPool.map(spline_on_level , list(range(n_replications)))
 
