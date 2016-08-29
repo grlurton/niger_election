@@ -7,15 +7,12 @@ import numpy as np
 from io import StringIO
 import warnings
 
-## Setting working directory
-os.chdir('c://users/grlurton/documents/niger_election_data')
-
 ## Mapping to data directory
-data_dir = os.listdir('data/raw/tabula-RENALOC_Niger_733/')
+data_dir = os.listdir('../../data/raw/tabula-RENALOC_Niger_733/')
 
 ## Function to load csv files from tabula, and properly format them for aggregation
 def get_data(adress) :
-    url = 'data/raw/tabula-RENALOC_Niger_733/' + adress
+    url = '../../data/raw/tabula-RENALOC_Niger_733/' + adress
     try :
         liste_depts = pd.read_csv( url , encoding = "ISO-8859-1" )
         ## Table with too few columns are ignored
@@ -244,11 +241,11 @@ renaloc.loc[((renaloc['departement'] == 'BIRNI') & (renaloc['region'] == 'TAHOUA
 
 
 ## Adding Unique IDs
-communes_listing = pd.read_csv('data/processed/org_units_listing.csv')
+communes_listing = pd.read_csv('../../data/processed/org_units_listing.csv , encoding = "ISO-8859-1"')
 
 renaloc_full = pd.merge(renaloc , communes_listing ,
                             on = ['region' , 'commune'] ,
                             how = 'left')
 
 ## Outputting the full data
-renaloc_full.to_csv('data/processed/renaloc_full.csv' , index = False)
+renaloc_full.to_csv('../../data/processed/renaloc_full.csv' , index = False)

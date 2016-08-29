@@ -4,15 +4,12 @@
 import pandas as pd
 import os as os
 
-## Setting working directory
-os.chdir('c://users/grlurton/documents/niger_election_data')
-
 ## Adding Unique IDs
-communes_listing = pd.read_csv('data/raw/Niger_Communes.csv', encoding = "ISO-8859-1")
-departements_listing = pd.read_csv('data/raw/Niger_Departements.csv' , encoding = "ISO-8859-1")
-regions_listing = pd.read_csv('data/raw/Niger_Regions.csv', encoding = "ISO-8859-1")
+communes_listing = pd.read_csv('../../data/raw/Niger_Communes.csv', encoding = "ISO-8859-1")
+departements_listing = pd.read_csv('../../data/raw/Niger_Departements.csv' , encoding = "ISO-8859-1")
+regions_listing = pd.read_csv('../../data/raw/Niger_Regions.csv', encoding = "ISO-8859-1")
 
-store_electeurs = pd.HDFStore('data/raw/full_data.h5')
+store_electeurs = pd.HDFStore('../../data/raw/full_data.h5')
 data_electeurs = store_electeurs['complete_data']
 store_electeurs.close()
 
@@ -36,8 +33,11 @@ data_electeurs = correct_communes_names(data_electeurs , dep = True)
 full_data = pd.merge(communes_listing , departements_listing , on = 'ID_DEPART' , how = 'inner')
 full_data = pd.merge(full_data , regions_listing , on = 'ID_REGION' , how = 'inner')
 
-full_data.colnames = ['commune_ID' , 'departement_ID' , 'commune' , 'region_ID' , 'departement' , 'region']
+full_data.columns = ['commune_ID' , 'departement_ID' , 'commune' , 'region_ID' , 'departement' , 'region']
 data_electeurs.columns = ['region_ID' , 'region' , 'departement_ID' , 'departement' , 'commune_ID' , 'commune' , 'bureau_ID' , 'bureau'] + list(data_electeurs.columns[8:])
 
-full_data.to_csv('data/processed/org_units_listing.csv' , index = False)
-data_electeurs.to_csv('data/processed/voters_list.csv' , index = False)
+full_data.to_csv('../../data/processed/org_units_listing.csv' , index = False)
+data_electeurs.to_csv('../../data/processed/voters_list.csv' , index = False)
+
+
+full_data.columns

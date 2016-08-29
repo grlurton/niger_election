@@ -2,19 +2,16 @@ import json
 import os as os
 import pandas as pd
 
-## Setting working directory
-os.chdir('c://users/grlurton/documents/niger_election_data')
-
-with open('data/external/communes_gps.json') as json_data:
+with open('../../data/external/communes_gps.json') as json_data:
     carto_commune = json.load(json_data)
     json_data.close()
 carto_commune = pd.DataFrame(carto_commune).T
 
-with open('data/dictionnaries/gps_communes_recodes.json') as json_data:
+with open('../../data/dictionnaries/gps_communes_recodes.json') as json_data:
     correction_dictionnary = json.load(json_data)
     json_data.close()
 
-communes_listing = pd.read_csv('data/processed/org_units_listing.csv' , encoding = "ISO-8859-1")
+communes_listing = pd.read_csv('../../data/processed/org_units_listing.csv' , encoding = "ISO-8859-1")
 communes_listing = communes_listing[~(communes_listing.region == 'DIASPORA')]
 
 ## Get accents out
@@ -58,16 +55,16 @@ for i in range(len(communes_listing)) :
     communes_listing.loc[i , 'gps_name'] = commune
     communes_listing.loc[i , 'gps_ID'] = commune_id
 
-with open('data/processed/communes_gps.json', 'w') as outfile:
+with open('../../data/processed/communes_gps.json', 'w') as outfile:
     json.dump(out, outfile)
 
-communes_listing.to_csv('data/processed/org_units_listing.csv' , index = False )
+communes_listing.to_csv('../../data/processed/org_units_listing.csv' , index = False )
 
 ###############################
 ## Add gps_ids to voters' data
 
 ## Loading data from electoral lists
-data_electeurs = pd.read_csv('data/processed/voters_list.csv'  , encoding = "ISO-8859-1")
-gps_ids = communes_listing.loc[:, ['ID_COMMUNE' , 'gps_name' , 'gps_ID']]
-data_electeurs = pd.merge(data_electeurs , gps_ids , on = 'ID_COMMUNE' , how = 'left')
-data_electeurs.to_csv('data/processed/voters_list.csv' , index = False )
+data_electeurs = pd.read_csv('../../data/processed/voters_list.csv'  , encoding = "ISO-8859-1")
+gps_ids = communes_listing.loc[:, ['commune_ID' , 'gps_name' , 'gps_ID']]
+data_electeurs = pd.merge(data_electeurs , gps_ids , on = 'commune_ID' , how = 'left')
+data_electeurs.to_csv('../../data/processed/voters_list.csv' , index = False )
