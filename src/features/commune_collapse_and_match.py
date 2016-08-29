@@ -7,22 +7,19 @@ import os as os
 
 warnings.filterwarnings('ignore')
 
-## Setting working directory
-if os.name == 'nt':
-    os.chdir('h://niger_election_data')
-
-if os.name == 'posix':
-    os.chdir('niger_election_data')
-
 ## Loading data from Renaloc
-renaloc = pd.read_csv('data/processed/renaloc_localities.csv'  , encoding = "ISO-8859-1")
+renaloc = pd.read_csv('../../data/processed/renaloc_localities.csv'  , encoding = "ISO-8859-1")
 
 ## Loading data from electoral lists
-data_electeurs = pd.read_csv('data/processed/voters_list.csv'  , encoding = "ISO-8859-1")
+data_electeurs = pd.read_csv('../../data/processed/voters_list.csv'  , encoding = "ISO-8859-1")
 
 ## Droping data for electors from the Diaspora
 data_electeurs = data_electeurs[~(data_electeurs['region'] == 'DIASPORA')]
+
+data_electeurs.head()
+
 data_electeurs.gps_ID = data_electeurs.gps_ID.astype(str)
+
 ## Compute population in each data source and merge sources
 def sum_population(data):
     return data.population.sum(skipna = True)
@@ -63,7 +60,7 @@ merged_data = pd.merge(left = merged_data , right = prop_women ,
 
 
 ## Adding participation
-participation_data = pd.read_csv('data/interim/voting_first_round.csv'  , encoding = "ISO-8859-1")
+participation_data = pd.read_csv('../../data/interim/voting_first_round.csv'  , encoding = "ISO-8859-1")
 
 merged_data = pd.merge(merged_data , participation_data ,
                 on = ['commune' , 'departement'])
@@ -71,4 +68,4 @@ merged_data = pd.merge(merged_data , participation_data ,
 merged_data['urbain'] = list((merged_data['commune'].str[0:14] == 'ARRONDISSEMENT') | (merged_data['commune'] == merged_data['region']))
 
 ## Output the resulting data
-merged_data.to_csv('data/processed/commune_collapsed_matched.csv' , index = False)
+merged_data.to_csv('../../data/processed/commune_collapsed_matched.csv' , index = False)
