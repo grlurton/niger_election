@@ -90,12 +90,12 @@ def boot_splines_to_dataframe(boot_splines , levels):
 ####################
 ### Getting structure for complete data
 
-### Getting
-
 levels= ['region' , 'departement' ,  'commune']
+levels = ['region' , 'departement']
+
 age_structure = voters_data.groupby(levels).apply(age_distrib)
 age_structure = age_structure.reset_index()
-del age_structure['level_3']
+del age_structure['level_' + str(len(levels))]
 age_structure.columns = levels + ['age' , 'percentage']
 
 splined_data = boot_splines_to_dataframe(voters_data.groupby(levels).apply(get_spline_from_sample) , levels)
@@ -103,7 +103,7 @@ splined_data = boot_splines_to_dataframe(voters_data.groupby(levels).apply(get_s
 ## Getting bootstrapped splines
 
 n_processes = os.cpu_count() - 5
-n_replications = 250
+n_replications = 50
 
 threadPool = ThreadPool(n_processes)
 boot_splines = threadPool.map(spline_on_level , list(range(n_replications)))
