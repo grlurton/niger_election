@@ -123,11 +123,9 @@ def k_fold_validation(n_folds , data , model , random_effect):
 
 
 ## Dans ce script on s'arrete a la prediction, et on output le full dataset avec les predictions. On fera les rmse et autres visualisations dans le notebook
-
-model_data.columns = list(model_data.columns.str.replace(' ' , '_'))
-
-model = "population_census ~ population_voting_list + mean_age + voting + urbain + prop_women"
 n_folds = 7
+
+model = "population_census ~ population_voting_list + mean_age + urbain + prop_women + mahamadou_issoufou_prop + ibrahim_yacouba_prop"
 
 def model_predict_bootstrap(i):
     """
@@ -182,10 +180,6 @@ def get_spline_from_sample(sample):
     splines = spl_age(age_dist)
     extrapolated_data = impute_non_adulte(splines)
     return extrapolated_data
-
-
-
-
 
 
 
