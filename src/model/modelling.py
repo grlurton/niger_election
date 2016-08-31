@@ -12,6 +12,10 @@ import statsmodels.formula.api as smf
 
 from multiprocessing.pool import ThreadPool
 
+
+import warnings
+warnings.filterwarnings('ignore')
+
 ## Setting working directory
 
 if os.name == 'nt':
@@ -86,8 +90,8 @@ def pred_random_effect(re_model , test_data , random_effect):
         if len(v) == 1 :
             out = out + params[v['variable']]*test_data[v['variable']]
 
-    if len(test_data[random_effect].unique()) > len(results.random_effects.Intercept) :
-        missing = test_data.loc[(test_data[random_effect].isin(list(results.random_effects.Intercept.index)) == False) , random_effect].unique()
+    if len(test_data[random_effect].unique()) > len(re_model.random_effects.Intercept) :
+        missing = test_data.loc[(test_data[random_effect].isin(list(re_model.random_effects.Intercept.index)) == False) , random_effect].unique()
         for reg in missing :
             print(missing + ' is missing')
             re_model.random_effects.Intercept[reg] = 0
@@ -103,12 +107,14 @@ def k_fold_validation(n_folds , data , model , random_effect):
     """
     samp = np.random.choice(len(data), len(data) , replace = False)
     test_out = ''
-    for i in range(1,(n_folds + 1)):
-        out = samp[((i- 1)*(len(data)/n_folds)):((i)*(len(data)/n_folds))]
+    for i in range(n_folds):
+        f = np.round(((i)*(len(data)/n_folds))).astype(int)
+        l = np.round(((i + 1)*(len(data)/n_folds))).astype(int) - 1
+        out = samp[f:l]
         train_dat = data[~data.index.isin(out)]
         test_dat = data[data.index.isin(out)]
-        results = smf.mixedlm(model , data = train_dat , groups = train_dat[random_effect]).fit()
-        test_dat['prediction'] = pred_random_effect(results , test_dat , random_effect)
+        result = smf.mixedlm(model , data = train_dat , groups = train_dat[random_effect]).fit()
+        test_dat['prediction'] = pred_random_effect(result , test_dat , random_effect)
         if len(test_out) > 0 :
             test_out = test_out.append(test_dat)
         elif len(test_out) == 0 :
@@ -116,20 +122,35 @@ def k_fold_validation(n_folds , data , model , random_effect):
     return test_out
 
 
-## Dans ce script on s'arrete a la prediction, et on output le full dataset avec les predictions. On fera les rmse et autres visualisations dans le notebook.
-
-#def rmse(data , predicted):
-    #return np.sqrt(np.average(((data - predicted) * (data - predicted))))
-#    return np.median(np.abs(data - predicted) / data)
-
+## Dans ce script on s'arrete a la prediction, et on output le full dataset avec les predictions. On fera les rmse et autres visualisations dans le notebook
 
 model_data.columns = list(model_data.columns.str.replace(' ' , '_'))
 
-rmses = []
-n_folds = 10
-final_test = k_fold_validation(n_folds , model_data , 'population_census ~ population_voting_list + mean_age + voting + urbain + prop_women + Ibrahim_Yacouba' , 'region')
+model = "population_census ~ population_voting_list + mean_age + voting + urbain + prop_women"
+n_folds = 7
 
-rmse(final_test.population_census , final_test.prediction)
+def model_predict_bootstrap(i):
+    """
+    Wrapper to get the bootstrapped predictions for a model
+    """
+    #print(i)
+    sample = get_bootstrap_sample(model_data)
+    sample = sample.reset_index()
+    del sample['index']
+    out = k_fold_validation(n_folds , sample , model , 'region')
+    return out
+
+
+
+## Getting bootstrapped splines
+n_processes = 1 #os.cpu_count()
+n_replications = 250
+
+threadPool = ThreadPool(n_processes)
+boot_splines = threadPool.map(model_predict_bootstrap , list(range(n_replications)))
+
+len(model_data)
+
 
 
 
