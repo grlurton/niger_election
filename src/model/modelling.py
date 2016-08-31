@@ -109,7 +109,7 @@ def k_fold_validation(n_folds , data , model , random_effect):
     test_out = ''
     for i in range(n_folds):
         f = np.round(((i)*(len(data)/n_folds))).astype(int)
-        l = np.round(((i + 1)*(len(data)/n_folds))).astype(int) - 1
+        l = np.round(((i + 1)*(len(data)/n_folds))).astype(int)
         out = samp[f:l]
         train_dat = data[~data.index.isin(out)]
         test_dat = data[data.index.isin(out)]
@@ -133,7 +133,7 @@ def model_predict_bootstrap(i):
     """
     Wrapper to get the bootstrapped predictions for a model
     """
-    #print(i)
+    print(i)
     sample = get_bootstrap_sample(model_data)
     sample = sample.reset_index()
     del sample['index']
@@ -141,20 +141,17 @@ def model_predict_bootstrap(i):
     return out
 
 
-
 ## Getting bootstrapped splines
-n_processes = 1 #os.cpu_count()
+n_processes = os.cpu_count()
 n_replications = 250
 
 threadPool = ThreadPool(n_processes)
-boot_splines = threadPool.map(model_predict_bootstrap , list(range(n_replications)))
-
-len(model_data)
+bootstrapped_models = threadPool.map(model_predict_bootstrap , list(range(n_replications)))
 
 
+model_total = pd.concat(bootstrapped_models, axis=0)
 
-
-
+model_total.to_csv('data/processed/model_data.csv')
 
 #######################
 ### Splining functions
