@@ -5,7 +5,7 @@ from bokeh.models import HoverTool
 from bokeh.io import vform
 from bokeh.palettes import *
 
-def make_map_data(carto_data , data , variable , palette) :
+def make_map_data(carto_data , data , variable , palette , space ) :
     n_colors = len(palette)
     regions_names = regions_ID = xs = ys  = values = cols = []
     for id in carto_data.keys() :
@@ -18,7 +18,7 @@ def make_map_data(carto_data , data , variable , palette) :
         else :
             values = values + [ float('nan')]
 
-    bins = np.linspace(min(values), max(values), n_colors)
+    bins = space(min(values), max(values), n_colors)
     bine = np.digitize(values, bins) - 1
     for i in range(len(bine)) :
         cols = cols + [palette[bine[i]]]
@@ -35,8 +35,8 @@ def make_map_data(carto_data , data , variable , palette) :
     return map_source
 
 
-def univar_map(carto_data , data , variable , palette):
-    map_source =  make_map_data(carto_data , data , variable , palette)
+def univar_map(carto_data , data , variable , palette , space = np.linspace):
+    map_source =  make_map_data(carto_data , data , variable , palette , space)
     p = figure(plot_width=700, plot_height=700,
            title="Registered voters by Commune" , title_text_font_size='12pt' ,
            tools='wheel_zoom,hover')
