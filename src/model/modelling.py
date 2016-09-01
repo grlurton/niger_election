@@ -1,9 +1,9 @@
 # coding: utf-8
 
 import pandas as pd
-import os as os
 import numpy as np
 import pickle
+import os
 
 from scipy.interpolate import UnivariateSpline
 
@@ -18,22 +18,15 @@ warnings.filterwarnings('ignore')
 
 ## Setting working directory
 
-if os.name == 'nt':
-    os.chdir('h://niger_election_data')
-
-if os.name == 'posix':
-    os.chdir('niger_election_data')
-
-
 ## SETTING PARAMETERS
 age_adulte = 19
 
 ## Voters data
-voters_data = pd.read_csv('data/processed/voters_list.csv' , encoding = "ISO-8859-1")
+voters_data = pd.read_csv('../../data/processed/voters_list.csv' , encoding = "ISO-8859-1")
 voters_data = voters_data[(voters_data.age >= age_adulte) & (voters_data.region != 'DIASPORA')]
 
 ## Model data
-model_data = pd.read_csv('data/processed/commune_collapsed_matched.csv' , encoding = "ISO-8859-1")
+model_data = pd.read_csv('../../data/processed/commune_collapsed_matched.csv' , encoding = "ISO-8859-1")
 
 def get_bootstrap_sample(voters_data):
     bootstrap_sample = voters_data.sample(n = len(voters_data) , replace = True)
@@ -122,9 +115,7 @@ def k_fold_validation(n_folds , data , model , random_effect):
     return test_out
 
 
-## Dans ce script on s'arrete a la prediction, et on output le full dataset avec les predictions. On fera les rmse et autres visualisations dans le notebook
 n_folds = 7
-
 model = "population_census ~ population_voting_list + mean_age + urbain + prop_women + mahamadou_issoufou_prop + ibrahim_yacouba_prop"
 
 def model_predict_bootstrap(i):
@@ -149,7 +140,7 @@ bootstrapped_models = threadPool.map(model_predict_bootstrap , list(range(n_repl
 
 model_total = pd.concat(bootstrapped_models, axis=0)
 
-model_total.to_csv('data/processed/model_data.csv')
+model_total.to_csv('../../data/processed/model_data.csv')
 
 #######################
 ### Splining functions

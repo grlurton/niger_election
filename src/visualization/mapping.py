@@ -35,7 +35,8 @@ def make_map_data(carto_data , data , variable , palette) :
     return map_source
 
 
-def univar_map(map_source):
+def univar_map(carto_data , data , variable , palette):
+    map_source =  make_map_data(carto_data , data , variable , palette)
     p = figure(plot_width=700, plot_height=700,
            title="Registered voters by Commune" , title_text_font_size='12pt' ,
            tools='wheel_zoom,hover')
