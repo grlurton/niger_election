@@ -115,7 +115,7 @@ def k_fold_validation(n_folds , data , model , random_effect):
     return test_out
 
 n_folds = 7
-model = "population_census ~ population_voting_list + mean_age + urbain + prop_women + laouan_magagi_prop + jean_philipe_padonou_prop + abdou_labo_prop + kassoum_moctar_prop + adal_rhoubeid_prop + mahamane_ousmane_prop + seyni_omar_prop + tahirou_guimba_prop + hama_amadou_prop + ibrahim_yacouba_prop + mahaman_hamissou_maman_prop + mahamadou_issoufou_prop + abdoulaye_amadou_traore_prop + cheffou_amadou_prop + boubacar_cisse_prop + registered_voting_prop + additional_list_prop + total_voting_prop + invalid_votes_prop + valid_votes_prop"
+model = "population_census ~ population_voting_list + mean_age + urbain + prop_women + laouan_magagi_prop + jean_philipe_padonou_prop + abdou_labo_prop + kassoum_moctar_prop + adal_rhoubeid_prop + mahamane_ousmane_prop + seyni_omar_prop + tahirou_guimba_prop + hama_amadou_prop + ibrahim_yacouba_prop + mahamadou_issoufou_prop + abdoulaye_amadou_traore_prop + cheffou_amadou_prop + boubacar_cisse_prop + registered_voting_prop + additional_list_prop + invalid_votes_prop + valid_votes_prop"
 
 def model_predict_bootstrap(i):
     """
