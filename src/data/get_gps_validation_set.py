@@ -72,11 +72,4 @@ extracted_validation = threadPool.map(get_validation_set , list(range(len(renalo
 validation_total = pd.concat(extracted_validation, axis=0)
 
 
-import pickle
-pickle.dump(extracted_validation , open("../../data/external/gps_validation_set.p" , "wb"))
-
-model_total.to_csv('../../data/external/gps_validation_set.csv')
-
-### Get all non equivocal gps for places.
-## match with renaloc
-## ML for correction
+validation_total.to_csv('../../data/external/gps_validation_set.csv')
