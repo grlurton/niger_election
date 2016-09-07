@@ -38,6 +38,3 @@ data_electeurs.columns = ['region_ID' , 'region' , 'departement_ID' , 'departeme
 
 full_data.to_csv('../../data/processed/org_units_listing.csv' , index = False)
 data_electeurs.to_csv('../../data/processed/voters_list.csv' , index = False)
-
-
-full_data.columns
