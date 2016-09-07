@@ -27,11 +27,7 @@ def n_units(data):
 n_units(data)
 data.groupby('region').apply(n_units)
 
-## Adding variable looling
-data['in_departement'] = data.departement.isin(data['osm_is_in'])
-
-## match with renaloc
-## ML for correction
+## Facility to compute distance
 def haversine(gps1,gps2):
     """
     Calculate the great circle distance between two points
@@ -61,62 +57,88 @@ def keep_unique_loc(data):
     uni_data = data.iloc[0]
     return uni_data
 
-uni_data = data.groupby('ID').apply(keep_min_distance)
-uni_data = uni_data.reset_index()
+## Keep only unique IDs and only one facility by GPS + only in clean of validation with
+def make_validation_set(data , radius):
+    uni_data = data.groupby('ID').apply(keep_min_distance)
+    uni_data = uni_data.reset_index()
+    uni_data = uni_data.groupby(['long','lat']).apply(keep_unique_loc)
+    dat_mod = uni_data[(uni_data.dist_validation < radius)]
+    return dat_mod
 
-print(len(uni_data))
+dat_mod = make_validation_set(data , 40)
 
-uni_data = uni_data.groupby(['long','lat']).apply(keep_unique_loc)
-print(len(uni_data))
+## Format validation set for scikit-learn use
+def make_sckikit_set(dat_mod):
+    y = []
+    dic = []
+    for i in range(len(dat_mod)) :
+        dic = dic + [{'latitude':dat_mod.renaloc_latitude.iloc[i] , 'longitude':dat_mod.renaloc_longitude.iloc[i] ,  'region':dat_mod.region.iloc[i] }]
+        y = y + [[dat_mod.lat.iloc[i] , dat_mod.long.iloc[i]]]
 
+    vec = DictVectorizer()
+    X = vec.fit_transform(dic).toarray()
+    y = np.array(y)
+    return (X , y)
 
-dat_mod = uni_data[(uni_data.dist_validation < 40)]
+X , y =  make_sckikit_set(dat_mod)
 
-y = []
-dic = []
-for i in range(len(dat_mod)) :
-    dic = dic + [{'latitude':dat_mod.renaloc_latitude.iloc[i] , 'longitude':dat_mod.renaloc_longitude.iloc[i] ,  'region':dat_mod.region.iloc[i] }]
-    y = y + [[dat_mod.lat.iloc[i] , dat_mod.long.iloc[i]]]
-
-vec = DictVectorizer()
-X = vec.fit_transform(dic).toarray()
-y = np.array(y)
-
+## Get Training and Testing sets
 X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.33)
 
-regr_1 = DecisionTreeRegressor(max_depth=(300))
-regr_1.fit(X_train, y_train)
+## Setting regressor
+regressor = DecisionTreeRegressor(max_depth=500)
+regressor.fit(X_train, y_train)
 
 # Predict
-y_1 = regr_1.predict(X_test)
+predicted = regressor.predict(X_test)
 
-out = []
-comp = []
-for u in range(len(y_1)) :
-    out = out + [haversine(y_test[u] , y_1[u])]
-    comp = comp + list(dat_mod.dist_validation[(dat_mod.long == y_test[u,1]) & (dat_mod.lat ==
-    y_test[u,0])])
+def get_distances(y_test , X_test , predicted):
+    dist_post_tree = []
+    dist_pre_tree = []
+    dist_from_renaloc = []
 
-dat_mod.head()
+    for u in range(len(y_1)) :
+        dist_post_tree = dist_post_tree + [haversine(y_test[u] , predicted[u])]
+        dist_pre_tree = dist_pre_tree + [haversine(X_test[u] , y_test[u])]
+        dist_from_renaloc = dist_from_renaloc + [haversine(X_test[u] , predicted[u])]
 
-len(comp)
-len(out)
+    dist_post_tree = pd.Series(dist_post_tree)
+    dist_from_renaloc = pd.Series(dist_from_renaloc)
+    dist_pre_tree = pd.Series(dist_pre_tree)
 
-comp
+    return (dist_post_tree , dist_pre_tree , dist_from_renaloc)
 
-out = pd.Series(out)
-out = out[out < 41]
+dist_post_tree , dist_pre_tree , dist_from_renaloc = get_distances(y_test , X_test , predicted)
 
-plt.hist(out , color = 'r' ,  bins=41)
+plt.scatter(dist_post_tree , dist_from_renaloc)
+plt.xlabel('Distance to actual - post regression')
+plt.ylabel('Distance moved by regression')
+plt.show()
 
-plt.hist(comp , alpha = 0.5 , bins =41 , color = 'g')
+dist_post_tree = dist_post_tree[dist_from_renaloc < 40] ## Censurer les localities qui sont bougées de plus de 40 km
+dist_pre_tree = dist_pre_tree[dist_from_renaloc < 40]
+dist_from_renaloc = dist_from_renaloc[dist_from_renaloc < 40]
+
+plt.scatter(dist_post_tree , dist_from_renaloc)
+plt.xlabel('Distance to actual - post regression')
+plt.ylabel('Distance moved by regression')
+plt.show()
+
+
+len(dist_post_tree)
+len(dist_pre_tree)
+len(dist_from_renaloc)
+
+plt.hist(dist_post_tree , color = 'r' ,  bins=41)
+plt.hist(dist_pre_tree , alpha = 0.5 , bins =41 , color = 'g')
+plt.hist(dist_from_renaloc , alpha = 0.5 , bins =41 , color = 'b')
 plt.show()
 
 def prop_exact(dat , dist):
     return sum(pd.Series(dat) < dist) / len(dat)
 
-prop_exact(out , 25)
-prop_exact(comp , 25)
+prop_exact(dist_pre_tree , 10)
+prop_exact(dist_post_tree , 10)
 
-np.median(comp)
-np.median(out)
+np.median(dist_pre_tree)
+np.median(dist_post_tree)

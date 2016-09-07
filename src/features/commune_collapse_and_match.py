@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import pandas as pd
-import json
 import warnings
 import os as os
 
