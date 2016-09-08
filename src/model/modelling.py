@@ -16,8 +16,6 @@ from multiprocessing.pool import ThreadPool
 import warnings
 warnings.filterwarnings('ignore')
 
-## Setting working directory
-
 ## SETTING PARAMETERS
 age_adulte = 19
 
@@ -39,8 +37,6 @@ def age_distrib(data) :
     data.age[data.age > 100] = 100
     out =  np.round(data.age).value_counts() / len(data)
     out = out.reset_index()
-
-
     out.columns = ['age' , 'percentage']
     return out
 
@@ -82,16 +78,13 @@ def pred_random_effect(re_model , test_data , random_effect):
             out = out + params[v['parametre']]*(str(test_data[v['variable']]) == v['value'])
         if len(v) == 1 :
             out = out + params[v['variable']]*test_data[v['variable']]
-
     if len(test_data[random_effect].unique()) > len(re_model.random_effects.Intercept) :
         missing = test_data.loc[(test_data[random_effect].isin(list(re_model.random_effects.Intercept.index)) == False) , random_effect].unique()
         for reg in missing :
             print(missing + ' is missing')
             re_model.random_effects.Intercept[reg] = 0
-
     random_effects = list(re_model.random_effects.Intercept[test_data.loc[: , random_effect]])
     out =  out + random_effects
-
     return out
 
 def k_fold_validation(n_folds , data , model , random_effect):
