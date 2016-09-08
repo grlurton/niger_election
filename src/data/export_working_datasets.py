@@ -16,18 +16,20 @@ geolocalized_data.to_csv('../../data/processed/renaloc_geolocalized.csv' , index
 locality_data = renaloc[renaloc.level == 'Localite']
 locality_data.to_csv('../../data/processed/renaloc_localities.csv' , index = False)
 
-## TAKE OUT DUPLICATE VOTERS
+## Taking out duplicate voters (probably from pb in extraction of voters data, may be should be done earlier)
 voters_data = pd.read_csv('../../data/processed/voters_list.csv' , encoding = "ISO-8859-1")
-len(voters_data)
 
+## For efficiency, splitting voters data, process separately part with doublon voters
 n_ids = voters_data['unique_ID'].value_counts()
 doublons = n_ids[n_ids > 1]
 
 doub_data = voters_data[voters_data.unique_ID.isin(list(doublons.keys()))]
 unique_data = voters_data[~(voters_data.unique_ID.isin(list(doublons.keys())))]
 
-d = doub_data.groupby('unique_ID').apply(keep_unique_voters)
+def keep_unique_voters(data):
+    return data.iloc[0]
 
+d = doub_data.groupby('unique_ID').apply(keep_unique_voters)
 dedoubled = d.reset_index(drop = True)
 
 final = unique_data.append(dedoubled)
