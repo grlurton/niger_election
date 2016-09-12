@@ -30,8 +30,8 @@ for i in range(len(list(carto_commune.records()))) :
         communes_listing.loc[(communes_listing.region == region) & (communes_listing.commune == commune) , 'GPS_ID'] = commune_id
     if len(com) == 0 :
         commune_correc = correction_dictionnary[region][commune]
-        communes_listing.loc[(communes_listing.region == region) & (communes_listing.commune == commune_correc) , 'gps_name'] = commune
-        communes_listing.loc[(communes_listing.region == region) & (communes_listing.commune == commune_correc) , 'gps_ID'] = commune_id
+        communes_listing.loc[(communes_listing.region == region) & (communes_listing.commune == commune_correc) , 'GPS_NAME'] = commune
+        communes_listing.loc[(communes_listing.region == region) & (communes_listing.commune == commune_correc) , 'GPS_ID'] = commune_id
 
 communes_listing.to_csv('../../data/processed/org_units_listing.csv' , index = False )
 

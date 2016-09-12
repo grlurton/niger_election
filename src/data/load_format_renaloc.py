@@ -4,8 +4,6 @@
 import pandas as pd
 import os as os
 import numpy as np
-from io import StringIO
-import warnings
 
 ## Mapping to data directory
 data_dir = os.listdir('../../data/raw/tabula-RENALOC_Niger_733/')
@@ -245,7 +243,15 @@ communes_listing = pd.read_csv('../../data/processed/org_units_listing.csv' , en
 
 renaloc_full = pd.merge(renaloc , communes_listing ,
                             on = ['region' , 'departement' , 'commune'] ,
-                            how = 'left')
+                            how = 'right')
+
+renaloc_full.GPS_ID.nunique()
+
+renaloc_full[pd.isnull(renaloc_full.locality)]
+
+renaloc[~(renaloc.commune.isin(renaloc_full.commune))]
+
+communes_listing.GPS_ID.nunique()
 
 ## Outputting the full data
 renaloc_full.to_csv('../../data/processed/renaloc_full.csv' , index = False)

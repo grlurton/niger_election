@@ -29,10 +29,11 @@
 
 ## Setting working directory
 
-import load_format_renaloc
-
 import PATCH_correction_voting_orgunit_names
 import make_communes_gps
+
+import load_format_renaloc
+
 import extract_participation
 
 

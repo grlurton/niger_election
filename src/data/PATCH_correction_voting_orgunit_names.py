@@ -13,7 +13,6 @@ store_electeurs = pd.HDFStore('../../data/raw/full_data.h5')
 data_electeurs = store_electeurs['complete_data']
 store_electeurs.close()
 
-
 del communes_listing['N_COMMUNE'] , communes_listing['Unnamed: 0'] , departements_listing['N_DEPART'] , departements_listing['Unnamed: 0'] , regions_listing['Unnamed: 0']  , data_electeurs['N_COMMUNE'] , data_electeurs['N_DEPART']  , data_electeurs['N_BUREAU']
 
 
@@ -28,6 +27,7 @@ def correct_communes_names(data ,dep = False) :
     return data
 
 communes_listing = correct_communes_names(communes_listing)
+departements_listing.loc[departements_listing.NOM_DEPART.str.contains('TIBIRI') , 'NOM_DEPART'] = 'TIBIRI'
 data_electeurs = correct_communes_names(data_electeurs , dep = True)
 
 full_data = pd.merge(communes_listing , departements_listing , on = 'ID_DEPART' , how = 'inner')
