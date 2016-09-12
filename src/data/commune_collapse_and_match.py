@@ -16,6 +16,7 @@ data_electeurs = pd.read_csv('../../data/processed/voters_list.csv'  , encoding 
 data_electeurs = data_electeurs[~(data_electeurs['region'] == 'DIASPORA')]
 
 data_electeurs.GPS_ID = data_electeurs.GPS_ID.astype(str)
+renaloc.GPS_ID = renaloc.GPS_ID.astype(str)
 
 ## Compute population in each data source and merge sources
 def sum_population(data):
@@ -48,7 +49,6 @@ voters_age.columns = ['region' , 'departement' ,'GPS_ID' , 'GPS_NAME' , 'mean_ag
 merged_data = pd.merge(left = merged_data , right = voters_age ,
                        how = 'inner' , on = ['departement' , 'region' ,'GPS_ID' , 'GPS_NAME'] )
 
-
 ## Get proportion of women in each commune
 def prop_women(data) :
     u = data.femmes.sum() / data.population.sum(skipna = True)
@@ -60,16 +60,14 @@ prop_women.columns = ['region' , 'departement' , 'GPS_ID' , 'GPS_NAME' , 'prop_w
 merged_data = pd.merge(left = merged_data , right = prop_women ,
                        how = 'inner' , on = ['departement' , 'region','GPS_ID' , 'GPS_NAME'] )
 
-
 ## Adding participation
 participation_data = pd.read_csv('../../data/interim/voting_first_round.csv'  , encoding = "ISO-8859-1")
 
 merged_data = pd.merge(merged_data , participation_data ,
-                on = ['GPS_NAME' , 'departement'])
+                on = ['GPS_NAME' , 'departement' , 'region'])
 
 merged_data['urbain'] = list((merged_data['commune'].str[0:14] == 'ARRONDISSEMENT') | (merged_data['commune'] == merged_data['region']))
 
 ## Output the resulting data
-len(merged_data)
 
 merged_data.to_csv('../../data/processed/commune_collapsed_matched.csv' , index = False)

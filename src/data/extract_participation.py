@@ -9,7 +9,6 @@ resultat_premier_tour.close()
 premier_tour_departement['departement' \
                             ] = premier_tour_departement.ID.str.split('Departement de :').str.get(1)
 
-premier_tour_departement.head()
 
 premier_tour_departement.loc[premier_tour_departement['departement'].isin(['TIBIRI (DOUTCHI)']), 'departement'] = 'TIBIRI'
 premier_tour_departement.loc[premier_tour_departement['Commune'].isin(['MARADI ARRONDISSEMENT 1']), 'Commune'] = 'ARRONDISSEMENT 1'
@@ -27,5 +26,11 @@ out.columns  = ['commune' , 'departement'  , 'registered' , 'registered_voting' 
 for can in candidats + ['registered_voting' , 'additional_list' , 'total_voting' , 'invalid_votes' , 'valid_votes'] :
     nam = can + '_prop'
     out[nam] = out[can] / out['registered']
+
+communes_listing = pd.read_csv('../../data/processed/org_units_listing.csv' , encoding = "ISO-8859-1")
+
+out = pd.merge(out , communes_listing ,
+                on = ['departement' , 'commune'] ,
+                how = 'right')
 
 out.to_csv('../../data/interim/voting_first_round.csv'  , index = False)
