@@ -19,12 +19,10 @@ warnings.filterwarnings('ignore')
 ## SETTING PARAMETERS
 age_adulte = 19
 
-## Voters data
-voters_data = pd.read_csv('../../data/processed/voters_list.csv' , encoding = "ISO-8859-1")
-voters_data = voters_data[(voters_data.age >= age_adulte) & (voters_data.region != 'DIASPORA')]
-
 ## Model data
 model_data = pd.read_csv('../../data/processed/commune_collapsed_matched.csv' , encoding = "ISO-8859-1")
+
+model_data[model_data.departement == 'TIBIRI']
 
 def get_bootstrap_sample(voters_data):
     bootstrap_sample = voters_data.sample(n = len(voters_data) , replace = True)
@@ -39,14 +37,6 @@ def age_distrib(data) :
     out = out.reset_index()
     out.columns = ['age' , 'percentage']
     return out
-
-def get_full_model_data(bootstrap_sample , model_data , levels):
-    """
-    Getting the model data
-    """
-    N_Voters = bootstrap_sample.groupby(levels).apply(len).reset_index()
-    full_data = pd.merge(N_Voters , model_data , on = levels , how = 'inner')
-    return full_data
 
 def get_variables_def(results) :
     """
@@ -99,6 +89,7 @@ def k_fold_validation(n_folds , data , model , random_effect):
         out = samp[f:l]
         train_dat = data[~data.index.isin(out)]
         test_dat = data[data.index.isin(out)]
+        train_dat = train_dat[~(train_dat.GPS_NAME == 'KORAHANE')]
         result = smf.mixedlm(model , data = train_dat , groups = train_dat[random_effect]).fit()
         test_dat['prediction'] = pred_random_effect(result , test_dat , random_effect)
         if len(test_out) > 0 :
@@ -108,7 +99,9 @@ def k_fold_validation(n_folds , data , model , random_effect):
     return test_out
 
 n_folds = 7
-model = "population_census ~ population_voting_list + mean_age + urbain + prop_women + laouan_magagi_prop + jean_philipe_padonou_prop + abdou_labo_prop + kassoum_moctar_prop + adal_rhoubeid_prop + mahamane_ousmane_prop + seyni_omar_prop + tahirou_guimba_prop + hama_amadou_prop + ibrahim_yacouba_prop + mahamadou_issoufou_prop + abdoulaye_amadou_traore_prop + cheffou_amadou_prop + boubacar_cisse_prop + registered_voting_prop + additional_list_prop + invalid_votes_prop + valid_votes_prop"
+
+model = "population_census ~ population_voting_list + mean_age + urbain + prop_women + laouan_magagi_prop + jean_philipe_padonou_prop + abdou_labo_prop + kassoum_moctar_prop + adal_rhoubeid_prop + mahamane_ousmane_prop + seyni_omar_prop + tahirou_guimba_prop + hama_amadou_prop + ibrahim_yacouba_prop + mahamadou_issoufou_prop + abdoulaye_amadou_traore_prop + cheffou_amadou_prop + boubacar_cisse_prop  + additional_list_prop + invalid_votes_prop"
+#model = "population_census ~ population_voting_list + mean_age + urbain + prop_women"
 
 def model_predict_bootstrap(i):
     """
