@@ -3,8 +3,6 @@
 ## Loading Relevant libraries
 import pandas as pd
 
-## Setting working directory
-
 ## Getting full data in
 renaloc = pd.read_csv('../../data/processed/renaloc_full.csv' , encoding = "ISO-8859-1" )
 

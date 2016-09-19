@@ -9,8 +9,9 @@ resultat_premier_tour.close()
 premier_tour_departement['departement' \
                             ] = premier_tour_departement.ID.str.split('Departement de :').str.get(1)
 
-
-premier_tour_departement.loc[premier_tour_departement['departement'].isin(['TIBIRI (DOUTCHI)']), 'departement'] = 'TIBIRI'
+premier_tour_departement.loc[premier_tour_departement['departement'].str.contains('TIBIRI'), 'departement'] = 'TIBIRI'
+premier_tour_departement.loc[premier_tour_departement['Commune'].str.contains('TIBIRI'), 'Commune'] = 'TIBIRI'
+premier_tour_departement.loc[premier_tour_departement['Commune'].str.contains('GANGARA'), 'Commune'] = 'GANGARA'
 premier_tour_departement.loc[premier_tour_departement['Commune'].isin(['MARADI ARRONDISSEMENT 1']), 'Commune'] = 'ARRONDISSEMENT 1'
 premier_tour_departement.loc[premier_tour_departement['Commune'].isin(['MARADI ARRONDISSEMENT 2']), 'Commune'] = 'ARRONDISSEMENT 2'
 premier_tour_departement.loc[premier_tour_departement['Commune'].isin(['MARADI ARRONDISSEMENT 3']), 'Commune'] = 'ARRONDISSEMENT 3'

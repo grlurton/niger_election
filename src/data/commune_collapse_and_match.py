@@ -60,8 +60,13 @@ prop_women.columns = ['region' , 'departement' , 'GPS_ID' , 'GPS_NAME' , 'prop_w
 merged_data = pd.merge(left = merged_data , right = prop_women ,
                        how = 'inner' , on = ['departement' , 'region','GPS_ID' , 'GPS_NAME'] )
 
+
+
 ## Adding participation
 participation_data = pd.read_csv('../../data/interim/voting_first_round.csv'  , encoding = "ISO-8859-1")
+participation_data.GPS_ID = participation_data.GPS_ID.astype(str)
+
+
 
 merged_data = pd.merge(merged_data , participation_data ,
                 on = ['GPS_ID' , 'GPS_NAME' , 'departement' , 'region'])
@@ -70,4 +75,5 @@ merged_data['urbain'] = list((merged_data['commune'].str[0:14] == 'ARRONDISSEMEN
 
 ## Output the resulting data
 
+len(merged_data)
 merged_data.to_csv('../../data/processed/commune_collapsed_matched.csv' , index = False)
