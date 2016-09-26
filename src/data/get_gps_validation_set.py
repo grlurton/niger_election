@@ -36,7 +36,7 @@ def haversine(gps1,gps2):
 
 renaloc_data['locality_ID'] = range(len(renaloc_data))
 renaloc_data['locality'] = renaloc_data['locality'].str.replace(' Urbain' , '').str.lower().str.title().str.strip()
-renaloc_data['NOM_REGION'] = renaloc_data['NOM_REGION'].str.lower().replace('tillaberi' , 'tillabéri').str.title()
+renaloc_data['region'] = renaloc_data['region'].str.lower().replace('tillaberi' , 'tillabéri').str.title()
 
 
 def get_validation_set(i) :
@@ -50,7 +50,7 @@ def get_validation_set(i) :
     renaloc_longitude = []
     print(i)
     locality = renaloc_data.loc[i , 'locality']
-    region = renaloc_data.loc[i , 'NOM_REGION']
+    region = renaloc_data.loc[i , 'region']
     while True :
         try :
             response = api.Get('node["name"="' + locality +'"]')
@@ -67,7 +67,7 @@ def get_validation_set(i) :
                     names = names + [locality]
                     coordinates = coordinates + [response['features'][u]['geometry']]
                     ID = ID + [renaloc_data.loc[i , 'locality_ID']]
-                    departements = departements + [renaloc_data.loc[i , 'NOM_DEPART']]
+                    departements = departements + [renaloc_data.loc[i , 'departement']]
                     regions = regions + [region]
                     osm_is_in = osm_is_in + [to_parse[u]['is_in'] ]
                     renaloc_latitude = renaloc_latitude + [renaloc_data.loc[i , 'latitude']]
@@ -76,7 +76,7 @@ def get_validation_set(i) :
                     names = names + [locality]
                     coordinates = coordinates + [response['features'][u]['geometry']]
                     ID = ID + [renaloc_data.loc[i , 'locality_ID']]
-                    departements = departements + [renaloc_data.loc[i , 'NOM_DEPART']]
+                    departements = departements + [renaloc_data.loc[i , 'departement']]
                     regions = regions + [region]
                     osm_is_in = osm_is_in + ['Region not ok']
                     renaloc_latitude = renaloc_latitude + [renaloc_data.loc[i , 'latitude']]
@@ -85,7 +85,7 @@ def get_validation_set(i) :
                     names = names + [locality]
                     coordinates = coordinates + [response['features'][u]['geometry']]
                     ID = ID + [renaloc_data.loc[i , 'locality_ID']]
-                    departements = departements + [renaloc_data.loc[i , 'NOM_DEPART']]
+                    departements = departements + [renaloc_data.loc[i , 'departement']]
                     regions = regions + [region]
                     osm_is_in = osm_is_in + ['Based on Distance']
                     renaloc_latitude = renaloc_latitude + [renaloc_data.loc[i , 'latitude']]
@@ -110,7 +110,6 @@ threadPool = ThreadPool(n_processes)
 extracted_validation = threadPool.map(get_validation_set , list(range(len(renaloc_data))))
 
 
-
 validation_total = pd.concat(extracted_validation, axis=0)
 validation_total = validation_total.reset_index()
 del validation_total['index']
@@ -122,6 +121,5 @@ validation_total['osm_is_in'] = validation_total['osm_is_in'].str.replace('Tâno
 for i in range(len(validation_total)):
     dist_i = haversine([validation_total.long.iloc[i] , validation_total.lat.iloc[i]] , [validation_total.renaloc_longitude.iloc[i] , validation_total.renaloc_latitude.iloc[i]])
     validation_total.loc[i , 'dist_validation'] = dist_i
-
 
 validation_total.to_csv('../../data/external/gps_validation_set.csv' , index = False)
