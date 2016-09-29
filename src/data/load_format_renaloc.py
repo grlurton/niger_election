@@ -168,7 +168,7 @@ def conversion(old):
     new.extend([0,0,0])
     return (int(new[0])+int(new[1])/60.0+int(new[2])/3600.0)
 
-
+renaloc.geoloc
 
 ## Function to parse GPS coordinates as they appear in the Tabula extracted csv
 def extract_gps(pdf_string):
