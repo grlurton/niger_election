@@ -1,13 +1,9 @@
-
 import pandas as pd
 import warnings
 import os as os
 
 renaloc = pd.read_csv('../../data/processed/renaloc_geolocalized.csv' , encoding = "ISO-8859-1" )
 voting_centers = pd.read_csv('../../data/raw/Niger_Bureaux.csv' ,  encoding = "ISO-8859-1" )
-
-
-len(voting_centers[voting_centers.ID_COMMUNE == 10301])
 
 names_ratios = {}
 ratio_list = []
@@ -17,15 +13,15 @@ for i in voting_centers.ID_COMMUNE.unique() :
         names_ratios[i] = rat
         ratio_list.append(rat)
 
-len(voting_centers[voting_centers.ID_COMMUNE == 10101])
-len(renaloc[renaloc.commune_ID == 10101])
+voting_centers.NOM_BUREAU = voting_centers.NOM_BUREAU.str.strip().str.lower()
+renaloc.locality = renaloc.locality.str.strip().str.lower()
 
+voting_centers.NOM_BUREAU = voting_centers.NOM_BUREAU.str.replace('ecole primaire' , '')
+voting_centers.NOM_BUREAU = voting_centers.NOM_BUREAU.str.replace('ecole' , '')
 
-import matplotlib.pyplot as plt
-o = plt.hist(pd.Series(ratio_list)[pd.Series(ratio_list) < 4])
-plt.show()
+voting_centers.NOM_BUREAU = voting_centers.NOM_BUREAU.str.strip().str.lower()
+renaloc.locality = renaloc.locality.str.strip().str.lower()
 
-voting_centers.head()
 
 exact_match = pd.merge(renaloc , voting_centers ,
                         left_on = ['commune_ID' , 'locality'] ,
@@ -41,7 +37,6 @@ geolocalized_bureaux = exact_match[~(exact_match.ID_COMMUNE.isin(duplicate_burea
 ## Show
 
 ## W in renaloc can be OU in voting_centers
-## trim names
 ## Enlever ["ECOLE PRIMAIRE" , "ECOLE"] dans voting_centers
 
 geolocalized_bureaux.to_csv('../../data/processed/geolocalized_bureaux.csv' , index = False)
