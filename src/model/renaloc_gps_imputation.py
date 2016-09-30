@@ -65,8 +65,6 @@ def make_validation_set(data , error_guess , radius ):
     dat_mod = uni_data[((uni_data.dist_validation < (error_guess + radius)) & (uni_data.dist_validation > (error_guess - radius)))]
     return dat_mod
 
-dat_mod.region.value_counts()
-
 dat_mod = make_validation_set(data , 25 , 5)
 len(dat_mod)
 
@@ -77,7 +75,7 @@ def make_sckikit_set(dat_mod):
     y = []
     dic = []
     for i in range(len(dat_mod)) :
-        dic = dic + [{'latitude':dat_mod.renaloc_latitude.iloc[i] , 'longitude':dat_mod.renaloc_longitude.iloc[i] ,  'region':dat_mod.region.iloc[i] }]
+        dic = dic + [{'latitude':dat_mod.renaloc_latitude.iloc[i] , 'longitude':dat_mod.renaloc_longitude.iloc[i] ,  'region':dat_mod.region.iloc[i] , 'departement':dat_mod.departement.iloc[i] }]
         y = y + [[dat_mod.lat.iloc[i] , dat_mod.long.iloc[i]]]
 
     vec = DictVectorizer()

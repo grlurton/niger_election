@@ -113,7 +113,7 @@ def get_validation_set(u) :
 
 n_processes = os.cpu_count()
 threadPool = ThreadPool(n_processes)
-extracted_validation = threadPool.map(get_validation_set , list(range(1,1000)))
+extracted_validation = threadPool.map(get_validation_set , list(range(1,2500)))
 
 validation_total = pd.concat(extracted_validation, axis=0)
 validation_total = validation_total.reset_index()
@@ -127,5 +127,3 @@ for i in range(len(validation_total)):
     validation_total.loc[i , 'dist_validation'] = dist_i
 
 g.geocode('test', timeout=10 , exactly_one = False)
-
-len(renaloc_data)
