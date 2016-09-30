@@ -14,6 +14,8 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import AdaBoostRegressor
 
+
+%matplotlib inline
 ### Load Data
 data = pd.read_csv('../../data/external/gps_validation_set.csv' , encoding = "ISO-8859-1")
 
@@ -47,15 +49,27 @@ def keep_unique_loc(data):
     uni_data = data.iloc[0]
     return uni_data
 
+def keep_non_rounded(data):
+    long_multip = list(data.long.value_counts()[data.long.value_counts() == 1].index)
+    lat_multip = list(data.lat.value_counts()[data.lat.value_counts() == 1].index)
+    uni_data = data[(data.long.isin(long_multip)) & (data.lat.isin(lat_multip))]
+    return uni_data
+
+
 ## Keep only unique IDs and only one facility by GPS + only in clean of validation with
-def make_validation_set(data , radius):
+def make_validation_set(data , error_guess , radius ):
     uni_data = data.groupby('ID').apply(keep_min_distance)
     uni_data = uni_data.reset_index()
     uni_data = uni_data.groupby(['long','lat']).apply(keep_unique_loc)
-    dat_mod = uni_data[(uni_data.dist_validation < radius)]
+    uni_data = keep_non_rounded(uni_data)
+    dat_mod = uni_data[((uni_data.dist_validation < (error_guess + radius)) & (uni_data.dist_validation > (error_guess - radius)))]
     return dat_mod
 
-dat_mod = make_validation_set(data , 30)
+dat_mod.region.value_counts()
+
+dat_mod = make_validation_set(data , 25 , 5)
+len(dat_mod)
+
 dat_mod = dat_mod[['departement' , 'lat' , 'long' , 'region' , 'renaloc_latitude' , 'renaloc_longitude']]
 
 ## Format validation set for scikit-learn use
@@ -117,6 +131,11 @@ BRpredict_lat = linear_model.BayesianRidge().fit(X_train , y_train[: ,1]).predic
 LApredict_long = linear_model.Lasso(alpha=.1).fit(X_train , y_train[: ,0]).predict (X_test)
 LApredict_lat = linear_model.Lasso(alpha=.1).fit(X_train , y_train[: ,1]).predict (X_test)
 
+## SVM
+from sklearn import svm
+
+
+
 
 ### Models evaluation
 def get_distances(y_test , X_test , predicted):
@@ -155,13 +174,15 @@ def get_regressor_distance(regressor , X_train , y_train , X_test , y_test , mul
 
 import os
 from multiprocessing.pool import ThreadPool
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.neural_network import MLPRegressor
 
 def regressor_distance_median(i):
     print(i)
     ABreg = get_regressor_distance(AdaBoostRegressor(DecisionTreeRegressor(max_depth=200),
                               n_estimators=500 , learning_rate= i/1000) , X_train , y_train , X_test , y_test ,
                               multi_y = False )
-    GBreg = get_regressor_distance(GradientBoostingRegressor(n_estimators=i, learning_rate=i/1000,
+    GBreg = get_regressor_distance(GradientBoostingRegressor(n_estimators=i, learning_rate=0.2,
                             max_depth=500 , random_state=0, loss='huber'),
                             X_train , y_train , X_test , y_test ,
                             multi_y = False )
@@ -171,45 +192,107 @@ def regressor_distance_median(i):
     BRreg = get_regressor_distance(linear_model.BayesianRidge(),
                         X_train , y_train , X_test , y_test ,
                         multi_y = False )
-    LAreg = get_regressor_distance(linear_model.Lasso(alpha=i/1000),
+    LAreg = get_regressor_distance(linear_model.Lasso(alpha=0.05),
                         X_train , y_train , X_test , y_test ,
                         multi_y = False )
     Rreg = get_regressor_distance(linear_model.Ridge (alpha = i/1000),
                         X_train , y_train , X_test , y_test ,
                         multi_y = False )
+    SVMreg = get_regressor_distance(svm.SVR(),
+                        X_train , y_train , X_test , y_test ,
+                        multi_y = False )
+    ENreg = get_regressor_distance(linear_model.ElasticNet(alpha = 0.05),
+                        X_train , y_train , X_test , y_test ,
+                        multi_y = False )
+    KRreg = get_regressor_distance(KernelRidge(kernel='rbf', gamma=i/1000),
+                        X_train , y_train , X_test , y_test ,
+                        multi_y = False )
+    OLSreg = get_regressor_distance(linear_model.LinearRegression(),
+                        X_train , y_train , X_test , y_test ,
+                        multi_y = False )
+    MLPreg = get_regressor_distance(MLPRegressor(alpha=i / 10000),
+                        X_train , y_train , X_test , y_test ,
+                        multi_y = False )
+
+    dat_out = {'ABreg':ABreg , 'GBreg':GBreg , 'DTreg':DTreg , 'BRreg':BRreg , 'LAreg':LAreg , 'Rreg':Rreg ,
+                'SVMreg':SVMreg , 'ENreg':ENreg , 'KRreg':KRreg , 'OLSreg':OLSreg , 'MLPreg':MLPreg}
+
     med_out = [i , np.median(ABreg.dist_post) , np.median(GBreg.dist_post) , np.median(DTreg.dist_post) ,
-                        np.median(BRreg.dist_post) , np.median(LAreg.dist_post) , np.median(Rreg.dist_post)]
-    return med_out
+                        np.median(BRreg.dist_post) , np.median(LAreg.dist_post) , np.median(Rreg.dist_post) , np.median(SVMreg.dist_post) , np.median(ENreg.dist_post) , np.median(KRreg.dist_post) , np.median(OLSreg.dist_post) , np.median(MLPreg.dist_post)]
+    return (med_out , dat_out)
 
 n_processes = os.cpu_count()
 threadPool = ThreadPool(n_processes)
 extracted_validation = threadPool.map(regressor_distance_median , list(range(10, 1000 , 50)))
 
-out = pd.DataFrame(extracted_validation)
+meds = [extr[0] for extr in extracted_validation]
+out = pd.DataFrame(meds)
 out.columns = list(['depth' , 'AdaBoosted' , 'GradientBoosted' , 'Regression_Tree' , 'BayesRidge', 'Lasso' ,
-                    'Ridge_regression'])
+                    'Ridge_regression' , 'SVM' , 'ElasticNet' , 'KernelRidge' , 'OLS' , 'MLP'])
+out.head()
 
-plt.scatter(out.depth , out.AdaBoosted , c = 'b' )
-plt.scatter(out.depth , out.GradientBoosted , c = 'r' )
-plt.scatter(out.depth , out.Regression_Tree , c = 'g' )
-plt.scatter(out.depth , out.BayesRidge , c = 'y' )
-plt.scatter(out.depth , out.Lasso , c = 'grey' )
-plt.scatter(out.depth , out.Ridge_regression , c = 'black' )
-plt.xlabel('Depth of tree')
-plt.ylabel('Distance to actual')
+
+plt.figure(figsize=(20,10))
+#plt.scatter(out.depth , out.AdaBoosted , c = 'b' , s= 50 )
+#plt.scatter(out.depth , out.GradientBoosted , c = 'r' , s= 50 )
+
+#plt.scatter(out.depth , out.BayesRidge , c = 'y' , s= 50 )
+#plt.scatter(out.depth , out.Lasso , c = 'k' , s= 50 )
+plt.scatter(out.depth , out.Ridge_regression , c = 'c' , s= 50 )
+plt.scatter(out.depth , out.MLP , c = 'm', s= 50 )
+plt.scatter(out.depth , out.OLS , c = 'g' , s= 50 )
+#plt.xlabel('Depth of tree')
+#plt.ylabel('Distance to actual')
 plt.show()
 
-plt.scatter(dist_post_tree , dist_from_renaloc)
-plt.xlabel('Distance to actual - post regression')
-plt.ylabel('Distance moved by regression')
-plt.show()
+for_hist = extracted_validation[1][1]
+nrows = 4
+ncols = 3
+fig, axarr = plt.subplots(nrows=nrows,ncols=ncols,figsize=(20,10))
+col = row = 0
+for dat in for_hist :
+    to_plot = for_hist[dat]
+    perc_under_5 = np.round(sum(to_plot.dist_post < 5) / len(to_plot) , decimals = 3)
+    axarr[row , col].hist(to_plot.dist_post , color = 'b' ,  bins=30)
+    axarr[row , col].hist(to_plot.dist_pre , color = 'r' ,  bins=30 , alpha = 0.5)
+    axarr[row , col].text(25, 20, perc_under_5 , fontsize=15)
+    axarr[row , col].set_xlim([0,30])
+    axarr[row , col].set_ylim([0,30])
+    axarr[row , col].set_title(dat)
+    col = col + 1
+    if col > (ncols - 1) :
+        col = 0
+        row = row + 1
 
-plt.scatter(dist_post_tree , dist_from_renaloc)
-plt.xlabel('Distance to actual - post regression')
-plt.ylabel('Distance moved by regression')
-plt.show()
 
-plt.hist(dist_post_tree , color = 'r' ,  bins=41)
-plt.hist(dist_pre_tree , alpha = 0.5 , bins =41 , color = 'g')
-plt.hist(dist_from_renaloc , alpha = 0.5 , bins =41 , color = 'b')
-plt.show()
+
+for_hist = extracted_validation[1][1]
+nrows = 4
+ncols = 3
+fig, axarr = plt.subplots(nrows=nrows,ncols=ncols,figsize=(20,10))
+col = row = 0
+for dat in for_hist :
+    to_plot = for_hist[dat]
+    axarr[row , col].scatter(to_plot.dist_pre , to_plot.dist_post , color = 'b')
+    axarr[row , col].set_xlim([25,30])
+    axarr[row , col].set_ylim([0,50])
+    axarr[row , col].set_title(dat)
+    col = col + 1
+    if col > (ncols - 1) :
+        col = 0
+        row = row + 1
+
+fig, axarr = plt.subplots(nrows=nrows,ncols=ncols,figsize=(20,10))
+col = row = 0
+for dat in for_hist :
+    to_plot = for_hist[dat]
+    dists = range(0,30)
+    dist_perc = []
+    for km in range(0,30):
+        dist_perc.append(sum(to_plot.dist_post < km) / len(to_plot))
+    axarr[row , col].plot(dists , dist_perc)
+    axarr[row , col].set_title(dat)
+    col = col + 1
+    if col > (ncols - 1) :
+        col = 0
+        row = row + 1
