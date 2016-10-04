@@ -1,25 +1,99 @@
 commune_ID,elec_name,renaloc_name
-,akoual,akouel (akoyal)
-,aniele,aniale (erwa)
-,bago,baggo
-,echkar tagaza,echkar
-,effartay,efartey
-,eguef,eguef (toudoun fedou)
-,guermawan,guermawane
-,hambobila,hambobilla
-,imboragan,imboraghan
-,inguirfane,ingarfane
-,inkadewan est,inkadewan
-,inkadewan ouest,inkadewane ouest
-,karnagan,karnagar
-,kiririya,kiriria
-,maigawaye,mai gawiyi
-,mama,mamma
-,soukoumour,soukoumour (1)
-,soukoumour,soukoumour ii(2)
-,tchougas,tchougass
-,tourouf,torouf
-,zargaw,zergaw
-,zargaw,zergaw ii
+10101,akoual,akouel (akoyal)
+10101,aniele,aniale (erwa)
+10101,bago,baggo
+10101,echkar tagaza,echkar
+10101,effartay,efartey
+10101,eguef,eguef (toudoun fedou)
+10101,guermawan,guermawane
+10101,hambobila,hambobilla
+10101,imboragan,imboraghan
+10101,inguirfane,ingarfane
+10101,inkadewan est,inkadewan
+10101,inkadewan ouest,inkadewane ouest
+10101,karnagan,karnagar
+10101,kiririya,kiriria
+10101,maigawaye,mai gawiyi
+10101,mama,mamma
+10101,soukoumour,soukoumour (1)
+10101,soukoumour,soukoumour ii(2)
+10101,tchougas,tchougass
+10101,tourouf,torouf
+10101,zargaw,zergaw
+10101,zargaw,zergaw ii
+10101,zargaw,zergaw i
 10201,takrissa chetima,takrissa chetima (bagdad)
 10201,tamesna,tamesna (quartier adminnistratif)
+50101,wan inila,waninila
+50101,tikikite,tikikit
+50101,tanfirgan,tanfirgane
+50101,tanasafoute,tanassafouta
+50101,tan azad,tananzad
+50101,sarsadan,sarsadane
+50201,sahia,sahiya
+50201,akassou folakawa,akassou folakana
+50201,sanguelou,sangue lou
+50201,samia,tsamia
+50201,dan lobi,dallobi
+50201,manni ada,mani ada
+50201,chetali,chetalli
+50201,toulloun kichirwa,toullou kichirwa
+50201,dan daji folakawa,dan daji falalawa
+50201,zango goga,zongo goga
+50201,sakratt,sakaratt
+50201,fallalaye,falaley
+50201,baledoum,balidoume
+50201,loukoudoussou,loukou doussou
+50201,tawatsay,tawatsaye ane
+50201,doutchin damo,doutchi damo
+50201,dangana,dan gana
+50201,jagorague,jagourague
+50201,souleymane baja,soulemane baja
+50201,manni hassan,mani hassan
+50201,chagnassou,changnassou
+70101,zango warch,zangon warche
+70101,alachini,alhachini
+70101,guidan raboi,guidan rabo
+70101,bikarou,bikaro
+70101,bakasso,bakousso
+70101,guidan dan kande (goulma taki),guidan dan kande (goulma
+70101,zangon idi djibo,zangon djibji
+70101,aouni kona,aouni koma
+70101,guidan tchinama,guidan tchinama (guighik)
+70101,dan lamso,guidandan lamso
+70101,rouwa dania i(karya banza),rouan dania i (kariya banza)
+70101,mai gochi,mai gochi guidan
+70101,acha bissa,achabissa
+70101,katchinawa haro,katsinawa haro
+70101,tabateka,tabate ka
+70101,tamoune dawa,tamoundawa
+70101,inga safoua,inga saboua
+70101,zango algabit ii,zongon algabid
+70101,zango moussa,zongo moussa
+70101,mai jiga gaguili,maijiga gaguile
+70101,mai rere,mairere
+70101,inga sabouwa,inga saboua
+70101,kassousawa,kassaoussawa
+70101,guidan gueraou(thani),guidan gueraou
+70101,guidan bako(dan tatou),guidan bakoy (hameau)
+70101,guidan neyno(moutoun naya),guidan neino moutoun
+70101,tahibal jigo,tahibal djigo
+70101,tadeyni,tadeini
+70101,tarka mahamane kane,tarka mahaman kane
+70101,guidan sabon gari(kankare),sabon gari kankare
+70101,guidan ijia,guidan idjia
+70101,maigaba,mai gaba
+70101,kouna daga,rougal kouna daga
+70101,ig nata amoumoun,ig nata amoumoune
+70101,zango algabit,zongon algabid
+70101,barkatta,barkata
+70101,cha'i,chai
+70101,el daweye,elh daweye
+70101,tahibal lawan,tahibal lawa
+70101,kassou chagolo,guidan kassou chagalo
+70101,kacha ina haussa,kacha ina
+70101,kaouchi narouwa(mati),kaouchi naroua
+70101,salla ii dango(akarori),sale ii dango akorori
+70101,magari sami,mai garia sami
+70101,tchinabro,tchinnibro
+70101,guidan atche (maijiga),guidan atche (mai jika)
