@@ -14,6 +14,8 @@ geolocalized_data.to_csv('../../data/processed/renaloc_geolocalized.csv' , index
 locality_data = renaloc[renaloc.level == 'Localite']
 locality_data.to_csv('../../data/processed/renaloc_localities.csv' , index = False)
 
+del locality_data
+
 ## Taking out duplicate voters (probably from pb in extraction of voters data, may be should be done earlier)
 voters_data = pd.read_csv('../../data/processed/voters_list.csv' , encoding = "ISO-8859-1")
 
@@ -34,3 +36,21 @@ final = unique_data.append(dedoubled)
 final = final.reset_index(drop = True)
 
 final.to_csv('../../data/processed/voters_list.csv' , index = False)
+
+del voters_data
+del unique_data
+
+## Export N of voters by bureau
+def get_bureaux_size(data):
+    name = data.bureau.iloc[0]
+    pop = len(data)
+    commune_ID = data.commune_ID.iloc[0]
+    bureau_ID = data.bureau_ID.iloc[0]
+    out = pd.DataFrame([{'commune_ID':commune_ID , 'bureau':name , 'N_voters':pop}])
+    return out
+
+voting_centers_size = final.groupby('bureau_ID').apply(get_bureaux_size)
+voting_centers_size = voting_centers_size.reset_index()
+voting_centers_size = voting_centers_size[['bureau_ID' , 'commune_ID' , 'bureau' , 'N_voters']]
+
+voting_centers_size.to_csv('../../data/processed/voting_bureaux_size.csv')
