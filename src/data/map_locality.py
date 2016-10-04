@@ -90,13 +90,10 @@ print(len(geolocalized_bureaux))
 
 ## Look at unmatched bureaux
 u = sorted(voting_centers.bureau_to_match[(~voting_centers.bureau_to_match.isin(geolocalized_bureaux.renaloc_ID)  ) & (voting_centers.commune_ID == 70101)])
-
 print(len(u))
-
 u
 
 v = sorted(renaloc.locality_to_match[~renaloc.renaloc_ID.isin(geolocalized_bureaux.renaloc_ID)  & (renaloc.commune_ID == 70101)])
-
 print(len(v))
 v
 
