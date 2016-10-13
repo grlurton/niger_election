@@ -43,11 +43,6 @@ voting_centers = pd.merge(voting_centers , dico_data ,
 
 voting_centers.loc[pd.isnull(voting_centers.renaloc_name) , 'renaloc_name'] = voting_centers.bureau_to_match[pd.isnull(voting_centers.renaloc_name)]
 
-geolocalized_bureaux = pd.merge(renaloc , voting_centers ,
-                        left_on = ['commune_ID' , 'locality_to_match'] ,
-                        right_on = ['commune_ID' , 'renaloc_name'])
-
-
 ### check and Mapping
 from difflib import SequenceMatcher
 
@@ -57,10 +52,11 @@ def similar(a , b):
 
 out_dico  = dico_data
 
+renaloc[renaloc.commune_ID == 10101]
 
+dico_data
 
-
-communes_to_read = [70101]
+communes_to_read = [10101]
 for commune in communes_to_read :
     out_bureau = []
     out_renaloc = []
@@ -82,10 +78,13 @@ for commune in communes_to_read :
     for_out = pd.DataFrame({'commune_ID':commune , 'elec_name':out_bureau , 'renaloc_name':out_renaloc})
     out_dico = out_dico.append(for_out)
 
-out = {'commune_ID':commune , 'elec_name':out_bureau , 'renaloc_name':out_renaloc}
-
 out_dico.to_csv('../../data/dictionnaries/locality_name_map.csv' , index = False)
 
+out_dico
+
+geolocalized_bureaux = pd.merge(renaloc , voting_centers ,
+                        left_on = ['commune_ID' , 'locality_to_match'] ,
+                        right_on = ['commune_ID' , 'renaloc_name'])
 print(len(geolocalized_bureaux))
 
 ## Look at unmatched bureaux
