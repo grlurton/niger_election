@@ -25,7 +25,7 @@ def get_spline_from_sample(sample):
     extrapolated_data = impute_non_adulte(splines)
     return extrapolated_data
 
-
+age_adulte = 19
 
 
 
@@ -57,20 +57,34 @@ def boot_splines_to_dataframe(boot_splines , levels):
         out.set_value(j, 'extrapolated', out.loc[j , 'data']['extrapol'])
     return out
 
+def age_distrib(data) :
+    """
+    Function to get the distribution of voters by age in a dataset. Age is censored at 100.
+    """
+    data.age[data.age > 100] = 100
+    out =  np.round(data.age).value_counts() / len(data)
+    out = out.reset_index()
+    out.columns = ['age' , 'percentage']
+    return out
+
+import pandas as pd
+import numpy as np
+from scipy.interpolate import UnivariateSpline
+import os
+import pickle
 
 
+from multiprocessing.pool import ThreadPool
 
+voters_data = pd.read_csv('../../data/processed/voters_list.csv'  , encoding = "ISO-8859-1")
 
-
-
-
-
+voters_data = voters_data[voters_data.region != 'DIASPORA']
 
 ####################
 ### Getting structure for complete data
 
 levels= ['region' , 'departement' ,  'commune']
-levels = ['region' , 'departement']
+#levels = ['region' , 'departement']
 
 age_structure = voters_data.groupby(levels).apply(age_distrib)
 age_structure = age_structure.reset_index()
@@ -79,9 +93,10 @@ age_structure.columns = levels + ['age' , 'percentage']
 
 splined_data = boot_splines_to_dataframe(voters_data.groupby(levels).apply(get_spline_from_sample) , levels)
 
+
 ## Getting bootstrapped splines
 
-n_processes = os.cpu_count() - 5
+n_processes = os.cpu_count()
 n_replications = 50
 
 threadPool = ThreadPool(n_processes)
@@ -106,6 +121,8 @@ ICSplined = bootstrapedsplined.groupby(levels).apply(get_spline_95IC)
 ICSplined = ICSplined.reset_index()
 ICSplined.columns = levels + ['IC95']
 
+
+
 out = {'splined_data':splined_data , 'confidence_intervals':ICSplined , 'age_structure':age_structure}
 
-pickle.dump(out , open("data/processed/bootstraped_splines.p" , "wb"))
+pickle.dump(out , open("../../data/processed/bootstraped_splines.p" , "wb"))
