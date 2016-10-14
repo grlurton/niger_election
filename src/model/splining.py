@@ -16,10 +16,11 @@ def impute_non_adulte(splines , age_adulte = age_adulte):
         'extrapol':list(splines(age_extrap))}
     return out
 
-def get_spline_from_sample(sample):
+def get_spline_from_sample(data):
     """
     Wrapper function to get age distribution, spline it and impute non adults from a given sample
     """
+    sample = data.sample(frac = 1 , replace = True)
     age_dist = age_distrib(sample)
     splines = spl_age(age_dist)
     extrapolated_data = impute_non_adulte(splines)
@@ -109,7 +110,9 @@ def get_spline_95IC(out_spline):
     Function to get the 95 Confidence interval from splined age structure
     """
     ext5 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.025, axis=0, numeric_only=True)
+    print(ext5)
     ext95 = pd.DataFrame(list(out_spline['extrapolated'])).quantile(q=0.975, axis=0, numeric_only=True)
+    print(ext95)
     spl5 = pd.DataFrame(list(out_spline['splined'])).quantile(q=0.025, axis=0, numeric_only=True)
     spl95 = pd.DataFrame(list(out_spline['splined'])).quantile(q=0.975, axis=0, numeric_only=True)
     return {'extrapolation_5':ext5 , 'extrapolation_95':ext95 ,
@@ -121,8 +124,9 @@ ICSplined = bootstrapedsplined.groupby(levels).apply(get_spline_95IC)
 ICSplined = ICSplined.reset_index()
 ICSplined.columns = levels + ['IC95']
 
+len(bootstrapedsplined[bootstrapedsplined.commune == 'ARLIT'])
 
-
+levels
 out = {'splined_data':splined_data , 'confidence_intervals':ICSplined , 'age_structure':age_structure}
 
 pickle.dump(out , open("../../data/processed/bootstraped_splines.p" , "wb"))
