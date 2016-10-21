@@ -1,9 +1,13 @@
 
+age_adulte = 19
+
+#help(UnivariateSpline)
+
 def spl_age(data):
     """
     Function to get spline of age from a distribution estimated with get_age_distribution
     """
-    out = UnivariateSpline(data['age'] , data['percentage'])
+    out = UnivariateSpline(data['age'] , data['percentage'] , k= 2)
     return out
 
 def impute_non_adulte(splines , age_adulte = age_adulte):
@@ -25,10 +29,6 @@ def get_spline_from_sample(data):
     splines = spl_age(age_dist)
     extrapolated_data = impute_non_adulte(splines)
     return extrapolated_data
-
-age_adulte = 19
-
-
 
 ### Running the models
 
@@ -130,3 +130,5 @@ levels
 out = {'splined_data':splined_data , 'confidence_intervals':ICSplined , 'age_structure':age_structure}
 
 pickle.dump(out , open("../../data/processed/bootstraped_splines.p" , "wb"))
+
+ICSplined.iloc[0]['IC95']
