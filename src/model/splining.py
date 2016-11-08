@@ -1,3 +1,4 @@
+age_adulte = 19
 
 def spl_age(data):
     """
@@ -26,7 +27,6 @@ def get_spline_from_sample(data):
     extrapolated_data = impute_non_adulte(splines)
     return extrapolated_data
 
-age_adulte = 19
 
 
 
@@ -97,7 +97,7 @@ splined_data = boot_splines_to_dataframe(voters_data.groupby(levels).apply(get_s
 
 ## Getting bootstrapped splines
 
-n_processes = os.cpu_count()
+n_processes = 2
 n_replications = 50
 
 threadPool = ThreadPool(n_processes)
