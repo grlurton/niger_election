@@ -1,10 +1,12 @@
 age_adulte = 19
 
+age_adulte = 22
+
 def spl_age(data):
     """
     Function to get spline of age from a distribution estimated with get_age_distribution
     """
-    out = UnivariateSpline(data['age'] , data['percentage'])
+    out = UnivariateSpline(data['age'] , data['percentage'] , k= 3)
     return out
 
 def impute_non_adulte(splines , age_adulte = age_adulte):
@@ -27,9 +29,12 @@ def get_spline_from_sample(data):
     extrapolated_data = impute_non_adulte(splines)
     return extrapolated_data
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> cf0c17c8e6c292592f92bf653736da9af5440ae6
 ### Running the models
 
 def spline_on_level(i):
@@ -78,8 +83,7 @@ import pickle
 from multiprocessing.pool import ThreadPool
 
 voters_data = pd.read_csv('../../data/processed/voters_list.csv'  , encoding = "ISO-8859-1")
-
-voters_data = voters_data[voters_data.region != 'DIASPORA']
+voters_data = voters_data[(voters_data.region != 'DIASPORA' ) & (voters_data.age >= age_adulte)]
 
 ####################
 ### Getting structure for complete data
@@ -124,9 +128,6 @@ ICSplined = bootstrapedsplined.groupby(levels).apply(get_spline_95IC)
 ICSplined = ICSplined.reset_index()
 ICSplined.columns = levels + ['IC95']
 
-len(bootstrapedsplined[bootstrapedsplined.commune == 'ARLIT'])
-
-levels
 out = {'splined_data':splined_data , 'confidence_intervals':ICSplined , 'age_structure':age_structure}
 
 pickle.dump(out , open("../../data/processed/bootstraped_splines.p" , "wb"))
