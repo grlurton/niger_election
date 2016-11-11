@@ -20,15 +20,29 @@ function makeGraphs(error, recordsJson){
 				}).addTo(map);
 			// Adding locations markers
 			var long , lat , i , locality , popup;
-
+			// Creating clustering markers
+			var markers = new L.markerClusterGroup({
+				maxClusterRadius: 20 ,
+				chunkedLoading: true ,
+				iconCreateFunction: function(cluster) {
+					var children = cluster.getAllChildMarkers();
+        	var sum = 0;
+					for (var i = 0; i < children.length; i++) {
+						sum += children[i].population;
+					}
+				return new L.DivIcon({ html: '<b>' + sum + '</b>' });
+    }
+	});
 			for (i = 0 ; i < records.length ; i++) {
 				long = records[i]['longitude'] ;
 				lat = records[i]['latitude'] ;
 
 				popup =  '<b> Locality : </b>'+ records[i].locality +
 									'<br/><b> Population : </b>' + records[i].population ;
-				console.log(locality)
-				markers.addLayer(L.circleMarker([lat,long]).bindPopup(popup).openPopup()) ;
+
+				local_marker = L.circleMarker([lat,long]).bindPopup(popup).openPopup() ;
+				local_marker.population = records[i].population ;
+				markers.addLayer(local_marker) ;
 			}
 			map.addLayer(markers);
   };
