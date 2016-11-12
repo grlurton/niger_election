@@ -1,5 +1,5 @@
 queue()
-	.defer(d3.json,"/data")
+	.defer(d3.json,"/voters/project")
 	.await(makeGraphs);
 
 
@@ -28,7 +28,7 @@ function makeGraphs(error, recordsJson){
 					var children = cluster.getAllChildMarkers();
         	var sum = 0;
 					for (var i = 0; i < children.length; i++) {
-						sum += children[i].population;
+						sum += children[i].n_population;
 					}
 				return new L.DivIcon({ html: '<b>' + sum + '</b>' });
     }
@@ -38,10 +38,10 @@ function makeGraphs(error, recordsJson){
 				lat = records[i]['latitude'] ;
 
 				popup =  '<b> Locality : </b>'+ records[i].locality +
-									'<br/><b> Population : </b>' + records[i].population ;
+									'<br/><b> Population : </b>' + records[i].n_population ;
 
 				local_marker = L.circleMarker([lat,long]).bindPopup(popup).openPopup() ;
-				local_marker.population = records[i].population ;
+				local_marker.n_population = records[i].n_population ;
 				markers.addLayer(local_marker) ;
 			}
 			map.addLayer(markers);
