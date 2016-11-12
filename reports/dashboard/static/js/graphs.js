@@ -1,5 +1,5 @@
 queue()
-	.defer(d3.json,"/data")
+	.defer(d3.json,"/voters/project")
 	.await(makeGraphs);
 
 

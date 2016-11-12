@@ -1,9 +1,9 @@
 from flask import Flask
 from flask import render_template
 import json
-from pymongo import MongoClient 
+from pymongo import MongoClient
 from bson import json_util
-from bson.json_util import dumps 
+from bson.json_util import dumps
 
 app = Flask(__name__)
 
@@ -15,7 +15,7 @@ FIELDS = {'locality' : True, 'latitude': True, 'longitude': True, 'population': 
 
 @app.route("/")
 def index():
-	return render_template("index.html")
+	return render_template("index2.html")
 
 @app.route("/voters/project")
 def voters_project():
@@ -30,4 +30,4 @@ def voters_project():
 	connection.close()
 	return json_projects
 if __name__ == "__main__":
-	app.run(host='0.0.0.0', port=5000, debug = True)	
+	app.run(host='0.0.0.0', port=8889, debug = True)
