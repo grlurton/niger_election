@@ -49,6 +49,4 @@ records = json.loads(out.T.to_json()).values()
 if __name__ == '__main__' :
     collection.insert(records)
 
-list(collection.find())[0]
-
 out.to_csv('../../reports/dashboard/input/data_for_viz.csv' , index = False)
