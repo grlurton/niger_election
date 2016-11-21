@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
-DBS_NAME = 'voter'
+DBS_NAME = 'voters'
 COLLECTION_NAME = 'project'
 FIELDS = {'locality' : True, 'latitude': True, 'longitude': True, 'n_population': True, '_id':False}
 

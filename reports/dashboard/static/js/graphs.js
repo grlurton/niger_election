@@ -7,9 +7,40 @@ function makeGraphs(error, recordsJson){
 	var records = recordsJson ;
 
 	// Add Map
-	var map = L.map('map');
+	
 
 	var drawMap = function(d){
+
+		var cities = new L.LayerGroup();
+
+	
+
+
+	var mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+		mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw';
+
+	var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr});
+	var streets  = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr});
+	var satellite  = L.tileLayer(mbUrl, {id: 'mapbox.satellite',   attribution: mbAttr});
+	var map = L.map('map', {
+		center: [39.73, -104.99],
+		zoom: 10,
+		layers: [grayscale, cities, satellite]
+	});
+
+	var baseLayers = {
+		"Grayscale": grayscale,
+		"Streets": streets,
+		"Satellite": satellite
+	};
+
+	var overlays = {
+		"Cities": cities
+	};
+
+	L.control.layers(baseLayers, overlays).addTo(map);
       map.setView([17.6078, 8.0817], 5);
 			mapLink = "<a href='http://openstreetmap.org'>OpenStreetMap</a>";
 
