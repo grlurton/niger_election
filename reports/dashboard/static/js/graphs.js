@@ -5,7 +5,36 @@ queue()
 
 function makeGraphs(error, recordsJson){
 	var records = recordsJson ;
+	var chart_rec = recordsJson ; 
 
+	//Clean data 
+	chart_rec.forEach(function(d) {
+		d["longitude"] = +d["longitude"];
+		d["latitude"] = +d["latitude"];
+	});
+
+	//Create a Crossfilter instance
+	var ndx = crossfilter(chart_rec)
+
+	//Define Dims 
+	var popDim = ndx.dimension(function(d){ return d['n_population'];}) ;
+	var allDim = ndx.dimension(function(d) {return d;});
+
+	var popGroup = popDim.group();
+	var all = ndx.groupAll();
+
+	//Charts 
+	var popChart = dc.rowChart("#population-row-chart");
+
+	popChart
+		.width(300)
+        .height(100)
+        .dimension(popDim)
+        //.group(popGroup)
+        //.ordering(function(d) { return -d.value })
+        //.colors(['#6baed6'])
+        //.elasticX(true)
+        //.xAxis().ticks(4);
 	// Add Map
 	
 
