@@ -3,8 +3,11 @@ import warnings
 import os as os
 
 renaloc = pd.read_csv('../../data/processed/renaloc_geolocalized.csv' , encoding = "ISO-8859-1" )
+renacom = pd.read_csv('../../data/external/2006 - RENACOM.csv' , encoding = 'ISO-8859-1')
 voting_centers = pd.read_csv('../../data/processed/voting_bureaux_size.csv' ,  encoding = "ISO-8859-1" )
-dico_data = pd.read_csv('../../data/dictionnaries/locality_name_map.csv')
+dico_data = pd.read_csv('../../data/dictionnaries/locality_name_map.csv' ,  encoding = "ISO-8859-1" )
+
+voting_centers.head()
 
 
 ## Drop bureaux of the diaspora
@@ -13,11 +16,13 @@ voting_centers = voting_centers[voting_centers.commune_ID < 90000]
 ## Make RENALOC ID for each locality
 renaloc['renaloc_ID'] = range(len(renaloc))
 
+
 ##  Make variables on which to match
 voting_centers['bureau_to_match'] = voting_centers.bureau.str.strip().str.lower()
 renaloc['locality_to_match'] = renaloc.locality.str.strip().str.lower()
+renacom['locality_to_match'] = renacom.LOCALITE.str.strip().str.lower()
 
-
+## Format voting centers bureaux names
 voting_centers.bureau_to_match = voting_centers.bureau_to_match.str.replace('ecole primaire' , '')
 voting_centers.bureau_to_match = voting_centers.bureau_to_match.str.replace('ecole' , '')
 voting_centers.bureau_to_match = voting_centers.bureau_to_match.str.replace('quartier' , '')
@@ -26,14 +31,22 @@ voting_centers.bureau_to_match = voting_centers.bureau_to_match.str.replace('1|2
 voting_centers.loc[voting_centers.bureau_to_match.str[-2:-1] == ' ' ,
                     'bureau_to_match'] = voting_centers.bureau_to_match[voting_centers.bureau_to_match.str[-2:-1] == ' '].str[:-2]
 voting_centers.bureau_to_match = voting_centers.bureau_to_match.str.replace('-' , ' ').str.strip()
+voting_centers.bureau_to_match = voting_centers.bureau_to_match.str.strip().str.lower()
 
+
+## Format renaloc names
 renaloc.loc[renaloc.locality_to_match.str[-2:-1] == ' ' ,
                     'locality'] = renaloc.locality_to_match[renaloc.locality_to_match.str[-2:-1] == ' '].str[:-2]
-
 renaloc.locality_to_match = renaloc.locality_to_match.str.replace('\\/' , ' ')
-
-voting_centers.bureau_to_match = voting_centers.bureau_to_match.str.strip().str.lower()
 renaloc.locality_to_match = renaloc.locality_to_match.str.strip().str.lower()
+
+## Format renaloc names
+renacom.loc[renaloc.locality_to_match.str[-2:-1] == ' ' ,
+                    'locality'] = renacom.locality_to_match[renacom.locality_to_match.str[-2:-1] == ' '].str[:-2]
+renacom.locality_to_match = renacom.locality_to_match.str.replace('\\/' , ' ')
+renacom.locality_to_match = renacom.locality_to_match.str.strip().str.lower()
+
+
 
 ## Loading approximate manual matching
 voting_centers = pd.merge(voting_centers , dico_data ,
@@ -42,6 +55,10 @@ voting_centers = pd.merge(voting_centers , dico_data ,
                         how = 'left')
 
 voting_centers.loc[pd.isnull(voting_centers.renaloc_name) , 'renaloc_name'] = voting_centers.bureau_to_match[pd.isnull(voting_centers.renaloc_name)]
+
+
+############
+### MATCHING
 
 ### check and Mapping
 from difflib import SequenceMatcher
@@ -53,8 +70,6 @@ def similar(a , b):
 out_dico  = dico_data
 
 renaloc[renaloc.commune_ID == 10101]
-
-dico_data
 
 communes_to_read = [10101]
 for commune in communes_to_read :
@@ -80,8 +95,6 @@ for commune in communes_to_read :
 
 out_dico.to_csv('../../data/dictionnaries/locality_name_map.csv' , index = False)
 
-out_dico
-
 geolocalized_bureaux = pd.merge(renaloc , voting_centers ,
                         left_on = ['commune_ID' , 'locality_to_match'] ,
                         right_on = ['commune_ID' , 'renaloc_name'])
@@ -97,6 +110,9 @@ print(len(v))
 v
 
 geolocalized_bureaux.to_csv('../../data/processed/geolocalized_bureaux.csv' , index = False)
+
+
+
 
 
 ## Utilisation de covariates pour predire  ou son nom manquants
