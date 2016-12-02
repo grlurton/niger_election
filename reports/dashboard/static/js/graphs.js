@@ -59,6 +59,9 @@ function makeGraphs(error, recordsJson){
 		layers: [grayscale, cities, satellite]
 	});
 
+	var markersLayer = new L.LayerGroup();
+			map.addLayer(markersLayer);
+
 	var baseLayers = {
 		"Grayscale": grayscale,
 		"Streets": streets,
@@ -82,6 +85,8 @@ function makeGraphs(error, recordsJson){
 			// Adding locations markers
 			var long , lat , i , locality , popup;
 			// Creating clustering markers
+			var latlong_markers = new Array();
+			var t = 0
 			var markers = L.markerClusterGroup({
 				maxClusterRadius: 20 ,
 				chunkedLoading: true ,
@@ -118,10 +123,16 @@ function makeGraphs(error, recordsJson){
 
 				popup =  '<b> Locality : </b>'+ records[i].locality +
 									'<br/><b> Population : </b>' + records[i].n_population ;
-
-				local_marker = L.circleMarker([lat,long] , {title: locality , n_population: n_population}).bindPopup(popup).openPopup() ;
+				latlong = new L.latLng(lat,long)					
+				local_marker = L.circleMarker(latlong , {title: locality , n_population: n_population}).bindPopup(popup).openPopup() ;
+				latlong_markers[t] = local_marker;
+				t++;
 				local_marker.n_population = records[i].n_population ;
-				markers.addLayer(local_marker) ;
+				local_marker.on("click",function(){
+
+				})
+				markers.addLayer(local_marker)
+				markers.addTo(markersLayer) ;
 			}
 			map.addLayer(markers);
 
@@ -135,6 +146,20 @@ function makeGraphs(error, recordsJson){
 				});
 
 				map.addControl( controlSearch );
+
+			total_pop = 0
+			map.on("boxzoomend",function(e){
+				for (var i = 0; i < latlong_markers.length; i++) {
+					if (e.boxZoomBounds.contains(latlong_markers[i].getLatLng())) {
+						
+						total_pop += latlong_markers[i].n_population;
+
+					}
+				}
+				console.log(total_pop);
+
+			});
+
   };
 	drawMap();
 };
