@@ -112,6 +112,7 @@ var controlSearch = new L.Control.Search({
 	var pop_number = dc.numberDisplay("#population-number");
 	var size_settlement = dc.barChart("#size-settlement")
 	var data_comparison = dc.scatterPlot("#data-comparison")
+	var locality_types = dc.barChart("#loc-type")
 
 	// Initiating CrossFilters
 	var xdata = null;
@@ -119,6 +120,7 @@ var controlSearch = new L.Control.Search({
 	var locality = null;
 	var locations = null
 	var voters = null
+	var locType = null
 
 // Called when dc.js is filtered (typically from user click interaction
 	var onFilt = function(chart, filter) {
@@ -151,9 +153,11 @@ var controlSearch = new L.Control.Search({
 	var total_people = xdata.groupAll().reduceSum(function(d){return d["n_population"];});
 	locations = xdata.dimension(function(d){return d.ll ;}) ;
 	voter = xdata.dimension(function(d){return [d.n_population , d.n_voters] ; });
-	console.log(voter) ;
 	var group1 = voter.group() ;
 
+	locType = xdata.dimension(function(d){
+		return d.loc_type}) ;
+	var locTypeGroup = locType.group() ;
 
 	var dim = {} ;
 	dim.locations = locations ;
@@ -187,20 +191,33 @@ var controlSearch = new L.Control.Search({
 		.renderHorizontalGridLines(true)
 		.xAxis().ticks(5);
 
-	data_comparison.width(250)
-    .height(300)
-    .x(d3.scale.linear().domain([0, 10000]))
-	.margins({top: 10, right: 50, bottom: 30, left: 40})
-	.elasticY(true)
-    .yAxisLabel("voters")
-    .xAxisLabel("RENACOM")
-    .clipPadding(10)
-	.on("filtered", onFilt)
-    .dimension(voter)
-    .excludedColor('#ddd')
-    .group(group1)
-	.xAxis().ticks(5);
+	data_comparison
+		.width(250)
+		.height(300)
+		.x(d3.scale.linear().domain([0, 10000]))
+		.margins({top: 10, right: 50, bottom: 30, left: 40})
+		.elasticY(true)
+		.yAxisLabel("voters")
+		.xAxisLabel("RENACOM")
+		.clipPadding(10)
+		.on("filtered", onFilt)
+		.dimension(voter)
+		.excludedColor('#ddd')
+		.group(group1)
+		.xAxis().ticks(5);
 
+	locality_types
+		.x(d3.scale.ordinal()) //.domain(["", "VA", "H", "VT" , "QT" , "CPT" , 'PE' , "ILE"])
+		.xUnits(dc.units.ordinal)
+		.height(300)
+		.width(250)
+		.margins({top: 10, right: 50, bottom: 30, left: 40})
+		.dimension(locType)
+		.on("filtered", onFilt)
+		.group(locTypeGroup)
+		.elasticY(true)
+		.renderHorizontalGridLines(true)
+		.xAxis().ticks(5);
 
 	dc.renderAll();
 };

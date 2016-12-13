@@ -6,7 +6,7 @@ bureaux_loc.columns
 
 to_drop = ['CodeRegion' , 'CodeDepartement' , 'CodeCommune' ,
             'MILIEU' , 'TYPECOM' , 'REGION' , 'DEPARTEMENT' , 'COMMUNE' ,
-            'TYPELOCALITE' , 'MASCULIN' , 'FEMININ' , 'MENAGE' , 'CODEIRHVIL' , 'CODEAP3AVI' , 'CodeCanton' ,
+            'MASCULIN' , 'FEMININ' , 'MENAGE' , 'CODEIRHVIL' , 'CODEAP3AVI' , 'CodeCanton' ,
             'Unnamed: 0' , "bureau_to_match" , "elec_name" , 'renaloc_name' ,
             "locality_to_match"]
 
@@ -25,12 +25,14 @@ def collapse_data(data) :
     longitude = data['LONGITUDE'].unique()
     latitude = data['LATITUDE'].unique()
     ID = data['CodeLocalite'].unique()
+    loc_type = data['TYPELOCALITE'].unique()
     return pd.DataFrame({'n_bureau':n_bureau ,
             'n_population' : n_population ,
             'n_voters' : n_voters ,
             'locality' : locality ,
             'longitude' : longitude ,
-            'latitude' : latitude})
+            'latitude' : latitude ,
+            'loc_type' : loc_type})
 
 out = bureaux_loc.groupby('CodeLocalite').apply(collapse_data).reset_index()
 del out['level_1']
@@ -58,5 +60,7 @@ records = json.loads(out.T.to_json()).values()
 
 if __name__ == '__main__' :
     collection.insert(records)
+
+out.head()
 
 out.to_csv('../../reports/dashboard/input/data_for_viz.csv' , index = False)

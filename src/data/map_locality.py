@@ -71,7 +71,7 @@ geolocalized_bureaux = geolocalized_bureaux[geolocalized_bureaux.LATITUDE != ' '
 
 geolocalized_bureaux.to_csv('../../data/processed/geolocalized_bureaux.csv' , index = False)
 
-
+geolocalized_bureaux.TYPELOCALITE.value_counts()
 
 
 communes_to_read = [10101]
