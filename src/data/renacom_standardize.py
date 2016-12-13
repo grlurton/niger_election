@@ -114,5 +114,6 @@ dico_to_merge = dico_commune[['CodeCommune' , 'region' , 'departement' , 'commun
 
 out = pd.merge(renacom , dico_to_merge , on = ['CodeCommune'])
 
+out.TOTAL = out.TOTAL.str.replace(',' , '')
 
 out.to_csv('../../data/processed/renacom_full.csv' , index = False)
