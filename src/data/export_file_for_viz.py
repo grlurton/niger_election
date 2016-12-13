@@ -2,22 +2,29 @@ import pandas as pd
 
 bureaux_loc = pd.read_csv('../../data/processed/geolocalized_bureaux.csv')
 
-to_drop = ['milieu' , 'menages' , 'geoloc' , 'menages_agricoles' ,
+bureaux_loc.columns
+
+to_drop = ['CodeRegion' , 'CodeDepartement' , 'CodeCommune' ,
+            'MILIEU' , 'TYPECOM' , 'REGION' , 'DEPARTEMENT' , 'COMMUNE' ,
+            'TYPELOCALITE' , 'MASCULIN' , 'FEMININ' , 'MENAGE' , 'CODEIRHVIL' , 'CODEAP3AVI' , 'CodeCanton' ,
             'Unnamed: 0' , "bureau_to_match" , "elec_name" , 'renaloc_name' ,
-            'level' , 'GPS_NAME' , "locality_to_match"]
+            "locality_to_match"]
+
+
 
 for var in to_drop :
     del bureaux_loc[var]
 
+bureaux_loc.TOTAL = pd.to_numeric(bureaux_loc.TOTAL)
 
 def collapse_data(data) :
     n_bureau = len(data)
-    n_population = data['population'].unique()
+    n_population = data['TOTAL'].unique()
     n_voters = data['N_voters'].sum()
-    locality = data['locality'].unique()
-    longitude = data['longitude'].unique()
-    latitude = data['latitude'].unique()
-    ID = data['renaloc_ID'].unique()
+    locality = data['LOCALITE'].unique()
+    longitude = data['LONGITUDE'].unique()
+    latitude = data['LATITUDE'].unique()
+    ID = data['CodeLocalite'].unique()
     return pd.DataFrame({'n_bureau':n_bureau ,
             'n_population' : n_population ,
             'n_voters' : n_voters ,
@@ -25,8 +32,11 @@ def collapse_data(data) :
             'longitude' : longitude ,
             'latitude' : latitude})
 
-out = bureaux_loc.groupby('renaloc_ID').apply(collapse_data).reset_index()
+out = bureaux_loc.groupby('CodeLocalite').apply(collapse_data).reset_index()
 del out['level_1']
+
+out.head()
+
 
 ## Export the data in MongoDB and csv
 from pymongo import MongoClient
