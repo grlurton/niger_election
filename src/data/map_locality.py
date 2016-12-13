@@ -65,6 +65,9 @@ geolocalized_bureaux = pd.merge(renacom , voting_centers ,
                         left_on = ['commune_ID' , 'locality_to_match'] ,
                         right_on = ['commune_ID' , 'renaloc_name'])
 
+len(geolocalized_bureaux)
+
+geolocalized_bureaux = geolocalized_bureaux[geolocalized_bureaux.LATITUDE != ' ']
 
 geolocalized_bureaux.to_csv('../../data/processed/geolocalized_bureaux.csv' , index = False)
 
