@@ -110,8 +110,8 @@ dico_commune = pd.merge(renaloc_com , renacom_com ,
                         left_on = ['region' , 'departement' , 'commune'] ,
                         right_on = ['REGION' , 'DEPARTEMENT' , 'COMMUNE'])
 
+dico_to_merge = dico_commune[['CodeCommune' , 'region' , 'departement' , 'commune']]
 
+out = pd.merge(renacom , dico_to_merge , on = ['CodeCommune'])
 
-
-
-out = pd.merge(renaloc , renacom)
+out.to_csv('../../data/processed/renacom_full.csv' , index = False)
