@@ -11,7 +11,7 @@ MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
 DBS_NAME = 'voter'
 COLLECTION_NAME = 'project'
-FIELDS = {'locality' : True, 'latitude': True, 'longitude': True, 'n_population': True, '_id':False}
+FIELDS = {'locality' : True, 'latitude': True, 'longitude': True, 'n_population': True, '_id':False , 'n_voters':True}
 
 @app.route("/")
 def index():

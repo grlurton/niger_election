@@ -111,14 +111,16 @@ var controlSearch = new L.Control.Search({
 	// Initiating graphs
 	var pop_number = dc.numberDisplay("#population-number");
 	var size_settlement = dc.barChart("#size-settlement")
+	var data_comparison = dc.scatterPlot("#data-comparison")
 
 	// Initiating CrossFilters
 	var xdata = null;
-  var all = null;
-  var locality = null;
+	var all = null;
+	var locality = null;
 	var locations = null
+	var voters = null
 
-  // Called when dc.js is filtered (typically from user click interaction
+// Called when dc.js is filtered (typically from user click interaction
 	var onFilt = function(chart, filter) {
 		updateMap(locations.top(Infinity));
 	};
@@ -144,10 +146,14 @@ var controlSearch = new L.Control.Search({
 	xdata = crossfilter(records);
 	all = xdata.groupAll();
 	// Define the crossfilter dimensions
-  locality = xdata.dimension(function (d) { return d.locality; });
+	locality = xdata.dimension(function (d) { return d.locality; });
 	var n_people = xdata.dimension(function(d){return d.n_population ; }) ;
 	var total_people = xdata.groupAll().reduceSum(function(d){return d["n_population"];});
 	locations = xdata.dimension(function(d){return d.ll ;}) ;
+	voter = xdata.dimension(function(d){return [d.n_population , d.n_voters] ; });
+	console.log(voter) ;
+	var group1 = voter.group() ;
+
 
 	var dim = {} ;
 	dim.locations = locations ;
@@ -162,19 +168,39 @@ var controlSearch = new L.Control.Search({
 
 	// setting each chart's options
 	pop_number
-					.formatNumber(d3.format("d"))
-          .group(total_people)
-					.valueAccessor(function(d){return d; })
-					.formatNumber(d3.format(".3s"))
-          .on("filtered", onFilt);
+		.formatNumber(d3.format("d"))
+		.group(total_people)
+		.valueAccessor(function(d){return d; })
+		.formatNumber(d3.format(".3s"))
+		.on("filtered", onFilt);
 
 	size_settlement
-					.x(d3.scale.linear().domain([0 , 10000]))
-					.group(group)
-					.dimension(n_people)
-					.on("filtered", onFilt)
-					//.elasticX(true)
-					.xUnits(dc.units.fp.precision(binwidth));
+		.x(d3.scale.linear().domain([0 , 10000]))
+		.height(300)
+		.width(250)
+		.margins({top: 10, right: 50, bottom: 30, left: 40})
+		.group(group)
+		.dimension(n_people)
+		.on("filtered", onFilt)
+		.elasticY(true)
+		.xUnits(dc.units.fp.precision(binwidth))
+		.renderHorizontalGridLines(true)
+		.xAxis().ticks(5);
+
+	data_comparison.width(250)
+    .height(300)
+    .x(d3.scale.linear().domain([0, 10000]))
+	.margins({top: 10, right: 50, bottom: 30, left: 40})
+	.elasticY(true)
+    .yAxisLabel("voters")
+    .xAxisLabel("RENACOM")
+    .clipPadding(10)
+	.on("filtered", onFilt)
+    .dimension(voter)
+    .excludedColor('#ddd')
+    .group(group1)
+	.xAxis().ticks(5);
+
 
 	dc.renderAll();
 };
