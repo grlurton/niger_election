@@ -1,44 +1,32 @@
 import pandas as pd
 
-bureaux_loc = pd.read_csv('../../data/processed/geolocalized_bureaux.csv')
+bureaux_loc = pd.read_csv('../../data/processed/geolocalized_bureaux.csv' , encoding = "ISO-8859-1")
 
-bureaux_loc.columns
+bureaux_loc.population_renacom = pd.to_numeric(bureaux_loc.population_renacom)
+bureaux_loc.population_renaloc = pd.to_numeric(bureaux_loc.population_renaloc)
 
-to_drop = ['CodeRegion' , 'CodeDepartement' , 'CodeCommune' ,
-            'MILIEU' , 'TYPECOM' , 'REGION' , 'DEPARTEMENT' , 'COMMUNE' ,
-            'MASCULIN' , 'FEMININ' , 'MENAGE' , 'CODEIRHVIL' , 'CODEAP3AVI' , 'CodeCanton' ,
-            'Unnamed: 0' , "bureau_to_match" , "elec_name" , 'renaloc_name' ,
-            "locality_to_match"]
-
-
-
-for var in to_drop :
-    del bureaux_loc[var]
-
-bureaux_loc.TOTAL = pd.to_numeric(bureaux_loc.TOTAL)
 
 def collapse_data(data) :
     n_bureau = len(data)
-    n_population = data['TOTAL'].unique()
+    n_population_2001 = data['population_renacom'].unique()
+    n_population_2012 = data['population_renaloc'].unique()[0]
     n_voters = data['N_voters'].sum()
-    locality = data['LOCALITE'].unique()
-    longitude = data['LONGITUDE'].unique()
-    latitude = data['LATITUDE'].unique()
-    ID = data['CodeLocalite'].unique()
-    loc_type = data['TYPELOCALITE'].unique()
+    locality = data['localite_renacom'].unique()
+    longitude = data['longitude_renacom'].unique()
+    latitude = data['latitude_renacom'].unique()
+    ID = data['localite_ID_renacom'].unique()
+    loc_type = data['localite_type_renacom'].unique()
     return pd.DataFrame({'n_bureau':n_bureau ,
-            'n_population' : n_population ,
+            'n_population_2001' : n_population_2001 ,
+            'n_population_2012' : n_population_2012 ,
             'n_voters' : n_voters ,
             'locality' : locality ,
             'longitude' : longitude ,
             'latitude' : latitude ,
             'loc_type' : loc_type})
 
-out = bureaux_loc.groupby('CodeLocalite').apply(collapse_data).reset_index()
+out = bureaux_loc.groupby('localite_ID_renacom').apply(collapse_data).reset_index()
 del out['level_1']
-
-out.head()
-
 
 ## Export the data in MongoDB and csv
 from pymongo import MongoClient

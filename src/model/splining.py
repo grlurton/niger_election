@@ -1,5 +1,3 @@
-age_adulte = 19
-
 age_adulte = 22
 
 def spl_age(data):
@@ -29,12 +27,7 @@ def get_spline_from_sample(data):
     extrapolated_data = impute_non_adulte(splines)
     return extrapolated_data
 
-<<<<<<< HEAD
 
-
-
-=======
->>>>>>> cf0c17c8e6c292592f92bf653736da9af5440ae6
 ### Running the models
 
 def spline_on_level(i):
