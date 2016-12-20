@@ -2,36 +2,40 @@ queue()
 	.defer(d3.json,"/data")
 	.await(makeGraphs);
 
+
 function makeGraphs(error, recordsJson){
+	recordsJson.forEach( function(d,i) {
+		d.ll = L.latLng(d.latitude, d.longitude);
+	}) ;
 	// getting data
 	var records = recordsJson ;
-	records.forEach( function(d,i) {
-	d.ll = L.latLng(d.latitude, d.longitude);
-}) ;
+	// Construct the charts
+	var xdata = crossfilter(records);
+	// var all = xdata.groupAll();
+	var groupname = "marker-select";
 // ----------------------------------------------------------------------------
 // BUILDING THE BASE MAP
 // ----------------------------------------------------------------------------
 
 // Creating markers and clusters layers
-	//var markersLayer = new L.LayerGroup();
-	//var clusterLayer = new L.MarkerClusterGroup();
-  var long , lat , i , locality , popup;
+	var long , lat , i , locality , popup;
 
 	var markers = new L.markerClusterGroup({
 		maxClusterRadius: 50 ,
 		chunkedLoading: true ,
+		// Custom function to display count of people in cluster
 		iconCreateFunction: function(cluster) {
 			var children = cluster.getAllChildMarkers();
 			var sum = 0;
 			for (var i = 0; i < children.length; i++) {
-				sum += children[i].n_population;
+				sum += children[i].n_population_2001;
 			}
 
 			var c = ' marker-cluster-';
 
 			if (sum < 50000) {
 					c += 'small';
-			} else if (sum < 100000) {
+			} else if (sum < 10000) {
 					c += 'medium';
 			} else if (sum < 500000){
 					c += 'large';
@@ -41,50 +45,51 @@ function makeGraphs(error, recordsJson){
 					c += 'very-large';
 			}
 			return new L.DivIcon({ html: '<div><span><b>' + sum + '</b></span></div>',
-														className: 'marker-cluster' + c,
-														iconSize:  L.point(40, 40) });
-													}
+			className: 'marker-cluster' + c,
+			iconSize:  L.point(40, 40) });
+		}
 	});
 
-	var make_markers =  function(records){
 	for (i = 0 ; i < records.length ; i++) {
 		long = records[i]['longitude'] ;
 		lat = records[i]['latitude'] ;
-		locality = records[i].locality
-		n_population = records[i].n_population
+		locality = records[i].locality ;
+		n_population_2001 = records[i].n_population_2001 ;
 
-		popup =  '<b> Locality : </b>'+ records[i].locality +
-							'<br/><b> Population : </b>' + records[i].n_population ;
-
-		local_marker = L.circleMarker([lat,long] , {title: locality , n_population: n_population}).bindPopup(popup).openPopup() ;
-		local_marker.n_population = records[i].n_population ;
+		popup =  '<b> Locality : </b>'+ locality +
+				'<br/><b> Population : </b>' + n_population_2001 ;
+		local_marker = L.circleMarker([lat,long] ,
+										{title: locality ,
+										n_population_2001: n_population_2001}).bindPopup(popup).openPopup() ;
+		local_marker.n_population_2001 =n_population_2001 ;
 		markers.addLayer(local_marker) ;
 	}
-}
-make_markers(records)
 
 // Adding search box
-var controlSearch = new L.Control.Search({
+	var controlSearch = new L.Control.Search({
 		position:'topright',
 		layer: markers,
 		initial: false,
-		zoom: 5,
+		zoom: 15,
 		marker: false
 	});
 
 
 	// creating our base layers
 
-		// declaring map adress and attribution
+	// declaring map adress and attribution
 	var mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
 		'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 		'Imagery © <a href="http://mapbox.com">Mapbox</a>',
 		mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw';
 
-		// creating the different Tiles
-	var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr});
-	var streets  = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr});
-	var satellite  = L.tileLayer(mbUrl, {id: 'mapbox.satellite',   attribution: mbAttr});
+	// creating the different Tiles
+	var grayscale   = L.tileLayer(mbUrl,
+		{id: 'mapbox.light', attribution: mbAttr});
+	var streets  = L.tileLayer(mbUrl,
+		{id: 'mapbox.streets',   attribution: mbAttr});
+	var satellite  = L.tileLayer(mbUrl,
+		{id: 'mapbox.satellite',   attribution: mbAttr});
 
 	var baseLayers = {
 		"Grayscale": grayscale,
@@ -114,15 +119,7 @@ var controlSearch = new L.Control.Search({
 	var data_comparison = dc.scatterPlot("#data-comparison")
 	var locality_types = dc.barChart("#loc-type")
 
-	// Initiating CrossFilters
-	var xdata = null;
-	var all = null;
-	var locality = null;
-	var locations = null
-	var voters = null
-	var locType = null
-
-// Called when dc.js is filtered (typically from user click interaction
+// Called when dc.js is filtered
 	var onFilt = function(chart, filter) {
 		updateMap(locations.top(Infinity));
 	};
@@ -132,39 +129,29 @@ var controlSearch = new L.Control.Search({
 		//clear the existing markers from the map
 		markers.clearLayers() ;
 		locs.forEach( function(dimensions , i) {
-				popup =  '<b> Locality : </b>'+ dimensions.locality +
-									'<br/><b> Population : </b>' + dimensions.n_population ;
+			popup =  '<b> Locality : </b>'+ dimensions.locality +
+			'<br/><b> Population : </b>' + dimensions.n_population_2001 ;
 
-				local_marker = L.circleMarker([dimensions.latitude,
-																				dimensions.longitude] , {title: dimensions.locality , n_population: dimensions.n_population}).bindPopup(popup).openPopup() ;
-				local_marker.n_population = dimensions.n_population ;
+		local_marker = L.circleMarker(
+			[dimensions.latitude,dimensions.longitude] ,
+			{title: dimensions.locality ,
+				n_population_2001: dimensions.n_population_2001}).bindPopup(popup).openPopup() ;
+				local_marker.n_population_2001 = dimensions.n_population_2001 ;
 				markers.addLayer(local_marker) ;
 		});
 	};
 
-
-
-	// Construct the charts
-	xdata = crossfilter(records);
-	all = xdata.groupAll();
 	// Define the crossfilter dimensions
-	locality = xdata.dimension(function (d) { return d.locality; });
-	var n_people = xdata.dimension(function(d){return d.n_population ; }) ;
-	var total_people = xdata.groupAll().reduceSum(function(d){return d["n_population"];});
-	locations = xdata.dimension(function(d){return d.ll ;}) ;
-	voter = xdata.dimension(function(d){return [d.n_population , d.n_voters] ; });
+	var locality = xdata.dimension(function (d) { return d.locality; });
+	var n_people = xdata.dimension(function(d){return d.n_population_2001 ; }) ;
+	var total_people = xdata.groupAll().reduceSum(function(d){return d["n_population_2001"];});
+	var locations = xdata.dimension(function(d){return d.ll ;}) ;
+	var voter = xdata.dimension(function(d){return [d.n_population_2001 , d.n_population_2012] ; });
 	var group1 = voter.group() ;
 
-	locType = xdata.dimension(function(d){
+	var locType = xdata.dimension(function(d){
 		return d.loc_type}) ;
 	var locTypeGroup = locType.group() ;
-
-	var dim = {} ;
-	dim.locations = locations ;
-	dim.locality = locality ;
-	dim.n_people = n_people ;
-
-
 
 	var binwidth = 1000;
 	var group = n_people.group(function(d) { return binwidth * Math.floor(d/binwidth); });
@@ -197,7 +184,7 @@ var controlSearch = new L.Control.Search({
 		.x(d3.scale.linear().domain([0, 10000]))
 		.margins({top: 10, right: 50, bottom: 30, left: 40})
 		.elasticY(true)
-		.yAxisLabel("voters")
+		.yAxisLabel("RENALOC")
 		.xAxisLabel("RENACOM")
 		.clipPadding(10)
 		.on("filtered", onFilt)
@@ -207,7 +194,7 @@ var controlSearch = new L.Control.Search({
 		.xAxis().ticks(5);
 
 	locality_types
-		.x(d3.scale.ordinal()) //.domain(["", "VA", "H", "VT" , "QT" , "CPT" , 'PE' , "ILE"])
+		.x(d3.scale.ordinal())
 		.xUnits(dc.units.ordinal)
 		.height(300)
 		.width(250)
