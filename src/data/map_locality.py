@@ -4,7 +4,7 @@ import os as os
 
 renaloc = pd.read_csv('../../data/processed/renaloc_geolocalized.csv' , encoding = "ISO-8859-1" )
 renaloc = renaloc[['locality' , 'population' , 'hommes' , 'femmes' , 'menages' , 'menages_agricoles' ,
-                    'settlement_type' , 'region' , 'departement' , 'commune' , 'milieu' ,
+                    'locality_type' , 'region' , 'departement' , 'commune' , 'milieu' ,
                     'longitude' , 'latitude' , 'commune_ID' , 'GPS_NAME' , 'GPS_ID']]
 renaloc.columns = ['localite' , 'population' , 'hommes' , 'femmes' , 'menages' , 'menages_agricoles' ,
                     'localite_type' , 'region' , 'departement' , 'commune' , 'milieu' ,
@@ -14,7 +14,7 @@ renacom = pd.read_csv('../../data/processed/renacom_full.csv' , encoding = 'ISO-
 renacom = renacom[['MILIEU' , 'REGION' , 'DEPARTEMENT' , 'COMMUNE' , 'LOCALITE' ,
                     'TYPELOCALITE' , 'MASCULIN' , 'FEMININ' , 'TOTAL' , 'MENAGE' , 'LONGITUDE' ,
                     'LATITUDE' , 'commune_ID']]
-renacom.columns = ['milieu' , 'region' , 'departement' , 'commune' , 'localite' , 'localite_type' ,
+renacom.columns = ['milieu' , 'region' , 'departement' , 'commune' , 'locality' , 'locality_type' ,
                     'hommes' , 'femmes' , 'population' , 'menages' , 'longitude' , 'latitude' ,
                     'commune_ID']
 renacom = renacom[renacom.latitude != ' ']
@@ -92,13 +92,11 @@ renacom_bureaux_renaloc = pd.merge(renacom_bureaux , renaloc ,
 
 renacom_bureaux_renaloc.to_csv('../../data/processed/geolocalized_bureaux.csv' , index = False)
 
+len(renacom_bureaux_renaloc)
 
+renacom_bureaux_renaloc.locality_to_match.value_counts()
 
-
-
-
-
-## Ad Hoc dictionnary generation
+renacom_bureaux_renaloc.columns
 
 from difflib import SequenceMatcher
 
@@ -107,29 +105,63 @@ def similar(a , b):
 
 out_dico  = dico_data
 
-communes_to_read = [10101]
+communes_to_read = [20301]
 for commune in communes_to_read :
-    out_bureau = []
-    out_renaloc = []
     print(commune)
-    bur_to_match = list(set(sorted(voting_centers.bureau_to_match[(~voting_centers.bureau_to_match.isin(geolocalized_bureaux.renaloc_ID)  ) & (voting_centers.commune_ID == commune)])))
-    ren_to_match = list(set(sorted(renaloc.locality_to_match[~renaloc.renaloc_ID.isin(geolocalized_bureaux.renaloc_ID)  & (renaloc.commune_ID == commune)])))
-    for j in range(len(bur_to_match)) :
-        bur_test = bur_to_match[j]
-        matches = []
-        for i in range(len(ren_to_match)):
-            dist = similar(bur_test, ren_to_match[i])
+    renacom_matched_bureau = list(renacom_bureaux_renaloc.locality_to_match[pd.isnull(renacom_bureaux_renaloc.bureau_to_match)])
+    renacom_to_match_bureau = renacom_bureaux_renaloc.locality_to_match[(~renacom_bureaux_renaloc.locality_to_match.isin(renacom_matched_bureau)) & (renacom_bureaux_renaloc.commune_ID == commune)].tolist()
+    print(str(len(renacom_to_match_bureau)) + ' localities in RENACOM to match with bureaux')
+    bur_to_match =  list(set(sorted(voting_centers.bureau_to_match[((~voting_centers.bureau_to_match.isin(renacom_bureaux_renaloc.bureau_to_match)  ) & (voting_centers.commune_ID == commune))])))
+    print(str(len(bur_to_match)) + ' bureaux to match with RENACOM')
+
+    renacom_matched_renaloc = list(renacom_bureaux_renaloc.locality_to_match[~pd.isnull(renacom_bureaux_renaloc.localite_renaloc)])
+    renacom_to_match_renaloc = renacom_bureaux_renaloc.locality_to_match[(~renacom_bureaux_renaloc.locality_to_match.isin(renacom_matched_renaloc)) & (renacom_bureaux_renaloc.commune_ID == commune)].tolist()
+    print(str(len(renacom_to_match_renaloc)) + ' localities in RENACOM to match with RENALOC')
+    renaloc_to_match = list(set(sorted(renaloc.locality_to_match[~renaloc.locality_to_match.isin(renacom_matched_renaloc)  & (renaloc.commune_ID == commune)])))
+    print(str(len(renaloc_to_match)) + ' localities in RENALOC to match with RENACOM')
+    out_renacom = []
+    out_matched = []
+    out_match_type = []
+
+    for j in range(len(renacom_to_match)) :
+        renacom_to_test = renacom_to_match[j]
+        matched = []
+        match_type = []
+        bureaux_matched = renaloc_matched = []
+        for i in range(len(bur_to_match)):
+            dist = similar(renacom_to_test, bur_to_match[i])
             if dist > 0.7 :
-                matches = matches + [ren_to_match[i]]
-        if len(matches) > 0 :
-            n_match = input("Which of: " + str(matches) + " for " + bur_test)
+                bureaux_matched = bureaux_matched + [bur_to_match[i]]
+        if len(bureaux_matched) > 0 :
+            n_match = input("Which of: " + str(bureaux_matched) + " for " + renacom_to_test)
             if len(n_match) > 0 :
-                out_bureau = out_bureau + [bur_test]
-                out_renaloc = out_renaloc + [matches[int(n_match)]]
-    for_out = pd.DataFrame({'commune_ID':commune , 'elec_name':out_bureau , 'renaloc_name':out_renaloc})
+                n_match = [int(l[0]) for l in n_match]
+                for i in n_match :
+                    out_renacom = out_renacom + [renacom_to_test]
+                    out_matched = out_matched + [bureaux_matched[i]]
+                    out_match_type = out_match_type + ['bureau']
+
+        for i in range(len(renaloc_to_match)):
+            dist = similar(renacom_to_test, renaloc_to_match[i])
+            if dist > 0.7 :
+                renaloc_matched = renaloc_matched + [renaloc_to_match[i]]
+        if len(renaloc_matched) > 0 :
+            n_match = input("Which of: " + str(renaloc_matched) + " for " + renacom_to_test)
+            if len(n_match) > 0 :
+                n_match = [int(l[0]) for l in n_match]
+                for i in n_match :
+                    out_renacom = out_renacom + [renacom_to_test]
+                    out_matched = out_matched + [renaloc_matched[i]]
+                    out_match_type = out_match_type + ['RENALOC']
+    for_out = pd.DataFrame({'commune_ID':commune ,
+                            'out_renacom':out_renacom ,
+                            'out_matched':out_matched ,
+                            'out_match_type':out_match_type})
     out_dico = out_dico.append(for_out)
 
 out_dico.to_csv('../../data/dictionnaries/locality_name_map.csv' , index = False)
+
+len(renaloc[(renaloc.commune_ID == commune)])
 
 geolocalized_bureaux = pd.merge(renaloc , voting_centers ,
                         left_on = ['commune_ID' , 'locality_to_match'] ,
@@ -145,10 +177,15 @@ v = sorted(renaloc.locality_to_match[~renaloc.renaloc_ID.isin(geolocalized_burea
 print(len(v))
 v
 
+pd.isnull(renacom_bureaux_renaloc.localite_renaloc).sum()
+np.isnan(renacom_bureaux_renaloc.population_renaloc).sum()
+
+renacom_bureaux_renaloc[(pd.isnull(renacom_bureaux_renaloc.locality_renaloc) == True) & (np.isnan(renacom_bureaux_renaloc.population_renaloc) == False) ]
+
+renaloc[renaloc.localite_ID == 59]
+
+len(renacom_bureaux_renaloc)
 
 
-
-
-
-
+renacom_bureaux_renaloc.columns
 ## Utilisation de covariates pour predire  ou son nom manquants
