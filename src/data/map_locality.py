@@ -92,11 +92,7 @@ renacom_bureaux_renaloc = pd.merge(renacom_bureaux , renaloc ,
 
 renacom_bureaux_renaloc.to_csv('../../data/processed/geolocalized_bureaux.csv' , index = False)
 
-len(renacom_bureaux_renaloc)
-
 renacom_bureaux_renaloc.locality_to_match.value_counts()
-
-renacom_bureaux_renaloc.columns
 
 from difflib import SequenceMatcher
 
@@ -135,6 +131,7 @@ for commune in communes_to_read :
         if len(bureaux_matched) > 0 :
             n_match = input("Which of: " + str(bureaux_matched) + " for " + renacom_to_test)
             if len(n_match) > 0 :
+                n_match = n_match.split(',')
                 n_match = [int(l[0]) for l in n_match]
                 for i in n_match :
                     out_renacom = out_renacom + [renacom_to_test]
@@ -148,6 +145,7 @@ for commune in communes_to_read :
         if len(renaloc_matched) > 0 :
             n_match = input("Which of: " + str(renaloc_matched) + " for " + renacom_to_test)
             if len(n_match) > 0 :
+                n_match = n_match.split(',')
                 n_match = [int(l[0]) for l in n_match]
                 for i in n_match :
                     out_renacom = out_renacom + [renacom_to_test]
@@ -160,32 +158,3 @@ for commune in communes_to_read :
     out_dico = out_dico.append(for_out)
 
 out_dico.to_csv('../../data/dictionnaries/locality_name_map.csv' , index = False)
-
-len(renaloc[(renaloc.commune_ID == commune)])
-
-geolocalized_bureaux = pd.merge(renaloc , voting_centers ,
-                        left_on = ['commune_ID' , 'locality_to_match'] ,
-                        right_on = ['commune_ID' , 'renaloc_name'])
-print(len(geolocalized_bureaux))
-
-## Look at unmatched bureaux
-u = sorted(voting_centers.bureau_to_match[(~voting_centers.bureau_to_match.isin(geolocalized_bureaux.renaloc_ID)  ) & (voting_centers.commune_ID == 70101)])
-print(len(u))
-u
-
-v = sorted(renaloc.locality_to_match[~renaloc.renaloc_ID.isin(geolocalized_bureaux.renaloc_ID)  & (renaloc.commune_ID == 70101)])
-print(len(v))
-v
-
-pd.isnull(renacom_bureaux_renaloc.localite_renaloc).sum()
-np.isnan(renacom_bureaux_renaloc.population_renaloc).sum()
-
-renacom_bureaux_renaloc[(pd.isnull(renacom_bureaux_renaloc.locality_renaloc) == True) & (np.isnan(renacom_bureaux_renaloc.population_renaloc) == False) ]
-
-renaloc[renaloc.localite_ID == 59]
-
-len(renacom_bureaux_renaloc)
-
-
-renacom_bureaux_renaloc.columns
-## Utilisation de covariates pour predire  ou son nom manquants
