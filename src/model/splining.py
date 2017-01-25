@@ -4,8 +4,9 @@ def spl_age(data):
     """
     Function to get spline of age from a distribution estimated with get_age_distribution
     """
-    out = UnivariateSpline(data['age'] , data['percentage'] , k= 3)
+    out = UnivariateSpline(data['age'] , data['percentage'] , k=3)
     return out
+
 
 def impute_non_adulte(splines , age_adulte = age_adulte):
     """
@@ -21,7 +22,7 @@ def get_spline_from_sample(data):
     """
     Wrapper function to get age distribution, spline it and impute non adults from a given sample
     """
-    sample = data.sample(frac = 1 , replace = True)
+    sample = data.sample(frac = .8 , replace = True)
     age_dist = age_distrib(sample)
     splines = spl_age(age_dist)
     extrapolated_data = impute_non_adulte(splines)
@@ -91,7 +92,6 @@ age_structure.columns = levels + ['age' , 'percentage']
 
 splined_data = boot_splines_to_dataframe(voters_data.groupby(levels).apply(get_spline_from_sample) , levels)
 
-
 ## Getting bootstrapped splines
 
 n_processes = 2
@@ -124,3 +124,12 @@ ICSplined.columns = levels + ['IC95']
 out = {'splined_data':splined_data , 'confidence_intervals':ICSplined , 'age_structure':age_structure}
 
 pickle.dump(out , open("../../data/processed/bootstraped_splines.p" , "wb"))
+
+out['confidence_intervals']['IC95'][0]
+a = get_spline_from_sample(voters_data)
+
+import matplotlib.pyplot as plt
+
+plt.scatter(range(age_adulte , age_adulte + len(a['splined'])), a['splined'] ,  c = 'red')
+plt.scatter(range(0 , len(a['extrapol'])), a['extrapol'] ,  c = 'blue')
+plt.show()
