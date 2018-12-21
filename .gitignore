@@ -80,3 +80,5 @@ data/raw/
 
 # Temp files
 .DS_Store
+
+data/
