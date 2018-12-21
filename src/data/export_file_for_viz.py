@@ -1,6 +1,6 @@
 import pandas as pd
 
-bureaux_loc = pd.read_csv('../../data/processed/geolocalized_bureaux.csv' , encoding = "ISO-8859-1")
+bureaux_loc = pd.read_csv('/Users/grlurton/Data/data_niger_election_data/processed/geolocalized_bureaux.csv' , encoding = "ISO-8859-1")
 
 bureaux_loc.population_renacom = pd.to_numeric(bureaux_loc.population_renacom)
 bureaux_loc.population_renaloc = pd.to_numeric(bureaux_loc.population_renaloc)
@@ -43,12 +43,11 @@ collection = connection[DBS_NAME][COLLECTION_NAME]
 
 ## Empty MongoDB from current data
 result = collection.delete_many({})
-
-records = json.loads(out.T.to_json()).values()
-
 if __name__ == '__main__' :
-    collection.insert(records)
+    collection.insert_many(out.to_dict('records'))
 
-out.head()
+
+for obj in collection.find():
+    print (obj)
 
 out.to_csv('../../reports/dashboard/input/data_for_viz.csv' , index = False)

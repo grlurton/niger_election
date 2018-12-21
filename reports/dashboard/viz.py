@@ -18,14 +18,15 @@ def index():
 
 @app.route("/data")
 def get_data():
-    df = pd.read_csv(data_path  + 'data_for_viz.csv')
-    col_names = ['population','latitude','longitude','locality']
+    df = pd.read_csv(data_path  + 'data_for_viz.csv', encoding = "ISO-8859-1")
+    col_names = ['n_population_2012','latitude','longitude','locality','n_population_2001','loc_type']
     new_df = df[col_names]
-    df_clean = new_df.dropna()
-    df_clean = df_clean[0:1000]
+    new_df.loc[pd.isna(new_df['n_population_2012']),'n_population_2012'] = 0
+#    df_clean = new_df.dropna()
+    #df_clean = df_clean[0:1000]
 
-    return df_clean.to_json(orient='records')
+    return new_df.to_json(orient='records')
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port=8889,debug=True)
+    app.run(host='127.0.0.1',port=8000,debug=True, ssl_context='adhoc')

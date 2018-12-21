@@ -3,12 +3,12 @@ queue()
     .await(makeGraphs);
 
 
-function makeGraphs(error, recordsJson) {
-    recordsJson.forEach(function(d, i) {
+function makeGraphs(error, data) {
+    data.forEach(function(d, i) {
         d.ll = L.latLng(d.latitude, d.longitude);
     });
     // getting data
-    var records = recordsJson;
+    var records = data;
     // Construct the charts
     var xdata = crossfilter(records);
     // var all = xdata.groupAll();
@@ -56,6 +56,7 @@ function makeGraphs(error, recordsJson) {
         long = records[i]['longitude'];
         lat = records[i]['latitude'];
         locality = records[i].locality;
+        console.log(locality);
         n_population_2001 = records[i].n_population_2001;
 
         popup = '<b> Locality : </b>' + locality +
@@ -82,7 +83,7 @@ function makeGraphs(error, recordsJson) {
 
     // declaring map adress and attribution
     // creating the different Tiles
-    var grayscale = L.esri.basemapLayer('Streets')
+    var grayscale = L.esri.basemapLayer('Streets') ;
     var streets = L.tileLayer('http://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
         maxZoom: 20,
         attribution: '&copy; Openstreetmap France | &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -114,10 +115,11 @@ function makeGraphs(error, recordsJson) {
     // ----------------------------------------------------------------------------
 
     // Initiating graphs
+    console.log("starting Graphing !");
     var pop_number = dc.numberDisplay("#population-number");
-    var size_settlement = dc.barChart("#size-settlement")
-    var data_comparison = dc.scatterPlot("#data-comparison")
-    var locality_types = dc.barChart("#loc-type")
+    var size_settlement = dc.barChart("#size-settlement") ;
+    var data_comparison = dc.scatterPlot("#data-comparison") ;
+    var locality_types = dc.barChart("#loc-type") ;
 
     // Called when dc.js is filtered
     var onFilt = function(chart, filter) {
@@ -125,6 +127,7 @@ function makeGraphs(error, recordsJson) {
     };
 
     // Updates the displayed map markers to reflect the crossfilter dimension passed in
+    console.log('Adding interactivity') ;
     var updateMap = function(locs) {
         //clear the existing markers from the map
         markers.clearLayers();
@@ -143,25 +146,31 @@ function makeGraphs(error, recordsJson) {
     };
 
     // Define the crossfilter dimensions
+    console.log('Crossfilter 1')
     var locality = xdata.dimension(function(d) {
         return d.locality;
     });
+    console.log('Crossfilter 2')
     var n_people = xdata.dimension(function(d) {
         return d.n_population_2001;
     });
+    console.log('Crossfilter 3')
     var total_people = xdata.groupAll().reduceSum(function(d) {
         return d["n_population_2001"];
     });
+    console.log('Crossfilter 4')
     var locations = xdata.dimension(function(d) {
         return d.ll;
     });
+    console.log('Crossfilter 5');
     var voter = xdata.dimension(function(d) {
         return [d.n_population_2001, d.n_population_2012];
     });
     var group1 = voter.group();
 
+    console.log('Crossfilter 6');
     var locType = xdata.dimension(function(d) {
-        return d.loc_type
+        return d.loc_type ;
     });
     var locTypeGroup = locType.group();
 
@@ -172,6 +181,8 @@ function makeGraphs(error, recordsJson) {
 
 
     // setting each chart's options
+    console.log('starting charts');
+    console.log('chart 1');
     pop_number
         .formatNumber(d3.format("d"))
         .group(total_people)
@@ -181,6 +192,7 @@ function makeGraphs(error, recordsJson) {
         .formatNumber(d3.format(".3s"))
         .on("filtered", onFilt);
 
+    console.log('chart 2');
     size_settlement
         .x(d3.scale.linear().domain([0, 10000]))
         .height(300)
@@ -199,6 +211,7 @@ function makeGraphs(error, recordsJson) {
         .renderHorizontalGridLines(true)
         .xAxis().ticks(5);
 
+    console.log('chart 3');
     data_comparison
         .width(250)
         .height(300)
@@ -219,6 +232,7 @@ function makeGraphs(error, recordsJson) {
         .group(group1)
         .xAxis().ticks(5);
 
+    console.log('chart 4');
     locality_types
         .x(d3.scale.ordinal())
         .xUnits(dc.units.ordinal)
