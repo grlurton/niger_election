@@ -73,6 +73,8 @@ data/external/
 data/interim/
 data/processed/
 data/raw/
+data/db
+data/dhis
 
 # R Temp files
 .RData
@@ -80,5 +82,3 @@ data/raw/
 
 # Temp files
 .DS_Store
-
-data/
