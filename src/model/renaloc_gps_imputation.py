@@ -1,13 +1,7 @@
 import pandas as pd
-
-### Math libraries
 import numpy as np
 from math import radians, cos, sin, asin, sqrt
-
-### Plotting libraries
 import matplotlib.pyplot as plt
-
-### Machine Learning libraries
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.cross_validation import train_test_split
 from sklearn.feature_extraction import DictVectorizer
@@ -16,11 +10,14 @@ from sklearn.ensemble import AdaBoostRegressor
 
 
 %matplotlib inline
-### Load Data
-data = pd.read_csv('../../data/external/gps_validation_set.csv' , encoding = "ISO-8859-1")
 
-## Facility to compute distance
-def haversine(gps1,gps2):
+# Load Data
+data = pd.read_csv('~/data/niger_election_data/external/gps_validation_set.csv',
+                   encoding="ISO-8859-1")
+
+
+# Facility to compute distance
+def haversine(gps1, gps2):
     """
     Calculate the great circle distance between two points
     on the earth (specified in decimal degrees)
@@ -39,15 +36,18 @@ def haversine(gps1,gps2):
     km = 6367 * c
     return km
 
-## For localities with multiple matches, only keep closest matches
-def keep_min_distance(data) :
+
+# For localities with multiple matches, only keep closest matches
+def keep_min_distance(data):
     uni_data = data[data['dist_validation'] == min(data['dist_validation'])].iloc[0]
     del uni_data['ID']
     return uni_data
 
+
 def keep_unique_loc(data):
     uni_data = data.iloc[0]
     return uni_data
+
 
 def keep_non_rounded(data):
     long_multip = list(data.long.value_counts()[data.long.value_counts() == 1].index)
@@ -56,25 +56,29 @@ def keep_non_rounded(data):
     return uni_data
 
 
-## Keep only unique IDs and only one facility by GPS + only in clean of validation with
-def make_validation_set(data , error_guess , radius ):
+# Keep only unique IDs and only one facility by GPS + only in clean of validation with
+def make_validation_set(data, error_guess, radius):
     uni_data = data.groupby('ID').apply(keep_min_distance)
     uni_data = uni_data.reset_index()
-    uni_data = uni_data.groupby(['long','lat']).apply(keep_unique_loc)
+    uni_data = uni_data.groupby(['long', 'lat']).apply(keep_unique_loc)
     uni_data = keep_non_rounded(uni_data)
-    dat_mod = uni_data[((uni_data.dist_validation < (error_guess + radius)) & (uni_data.dist_validation > (error_guess - radius)))]
+    dat_mod = uni_data[((uni_data.dist_validation < (error_guess + radius)) &
+                        (uni_data.dist_validation > (error_guess - radius)))]
     return dat_mod
 
-dat_mod = make_validation_set(data , 25 , 5)
+
+dat_mod = make_validation_set(data, 25, 5)
 len(dat_mod)
 
-dat_mod = dat_mod[['departement' , 'lat' , 'long' , 'region' , 'renaloc_latitude' , 'renaloc_longitude']]
+dat_mod = dat_mod[['departement', 'lat', 'long', 'region', 'renaloc_latitude',
+                   'renaloc_longitude']]
 
-## Format validation set for scikit-learn use
+
+# Format validation set for scikit-learn use
 def make_sckikit_set(dat_mod):
     y = []
     dic = []
-    for i in range(len(dat_mod)) :
+    for i in range(len(dat_mod)):
         dic = dic + [{'latitude':dat_mod.renaloc_latitude.iloc[i] , 'longitude':dat_mod.renaloc_longitude.iloc[i] ,  'region':dat_mod.region.iloc[i] , 'departement':dat_mod.departement.iloc[i] }]
         y = y + [[dat_mod.lat.iloc[i] , dat_mod.long.iloc[i]]]
 

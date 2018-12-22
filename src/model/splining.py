@@ -1,10 +1,13 @@
+import matplotlib.pyplot as plt
+
 age_adulte = 22
+
 
 def spl_age(data):
     """
-    Function to get spline of age from a distribution estimated with get_age_distribution
+    Get spline of age from a distribution estimated with get_age_distribution.
     """
-    out = UnivariateSpline(data['age'] , data['percentage'] , k=3)
+    out = UnivariateSpline(data['age'], data['percentage'], k=3)
     return out
 
 
@@ -116,7 +119,7 @@ def get_spline_95IC(out_spline):
             'splining_5':spl5 , 'splining_95':spl95}
 
 
-### Computing IC95 for splined age structures
+# Computing IC95 for splined age structures
 ICSplined = bootstrapedsplined.groupby(levels).apply(get_spline_95IC)
 ICSplined = ICSplined.reset_index()
 ICSplined.columns = levels + ['IC95']
@@ -127,8 +130,6 @@ pickle.dump(out , open("../../data/processed/bootstraped_splines.p" , "wb"))
 
 out['confidence_intervals']['IC95'][0]
 a = get_spline_from_sample(voters_data)
-
-import matplotlib.pyplot as plt
 
 plt.scatter(range(age_adulte , age_adulte + len(a['splined'])), a['splined'] ,  c = 'red')
 plt.scatter(range(0 , len(a['extrapol'])), a['extrapol'] ,  c = 'blue')
