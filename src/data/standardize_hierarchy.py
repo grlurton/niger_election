@@ -1,7 +1,6 @@
 import pandas as pd
 import geopandas as gpd
 
-
 # Load different data
 renacom = pd.read_csv('~/data/niger_election_data/processed/renacom_full.csv',
                       encoding="ISO-8859-1")
@@ -76,9 +75,32 @@ bureaux.commune[bureaux.commune == 'maradi arrondissement 2'] = 'arrondissement 
 bureaux.commune[bureaux.commune == 'maradi arrondissement 3'] = 'arrondissement 3'
 bureaux.departement[bureaux.departement == 'tibiri (doutchi)'] = 'tibiri'
 
+# TODO Geocache osm
+
+fp = '/Users/grlurton/data/niger_election_data/external/commune_shp/nigcom.shp'
+commune_gps = gpd.read_file(fp)
+
+commune_gps.GPS_NAME = commune_gps.GPS_NAME.str.lower()
+
+dico = {
+        "attantane": ["attatane"],
+        "matamey": ["matameye"],
+        "dogo-dogo": ["dogo dogo"],
+        "birni n'konni": ['birni nkonni'],
+        "baban katami": ["babankatami"],
+        "sarkin haoussa": ["serkin haoussa"],
+        "dogonkiria": ["dogon kirya"],
+        "damagaram takaya": ["damagaram-t"]
+        }
+
+
+
+[k for k, v in dico.items() if 'dogo dogo' in v]
+
+sorted(renaloc.commune[~renaloc.commune.isin(commune_gps.GPS_NAME)].unique())
+sorted(commune_gps.GPS_NAME[~commune_gps.GPS_NAME.isin(renaloc.commune)])
+
 # TODO Add region, departement, commune in dhis
 
-health_facilities.name[health_facilities.name.str.contains('une')]
 
 # TODO if needed geocache DHIS
-# TODO Geocache osm
