@@ -1,6 +1,8 @@
 import pandas as pd
 import geopandas as gpd
 
+pd.options.mode.chained_assignment = None
+
 # Load different data
 renacom = pd.read_csv('~/data/niger_election_data/processed/renacom_full.csv',
                       encoding="ISO-8859-1")
@@ -82,23 +84,110 @@ commune_gps = gpd.read_file(fp)
 
 commune_gps.GPS_NAME = commune_gps.GPS_NAME.str.lower()
 
-dico = {
-        "attantane": ["attatane"],
-        "matamey": ["matameye"],
-        "dogo-dogo": ["dogo dogo"],
-        "birni n'konni": ['birni nkonni'],
-        "baban katami": ["babankatami"],
-        "sarkin haoussa": ["serkin haoussa"],
-        "dogonkiria": ["dogon kirya"],
-        "damagaram takaya": ["damagaram-t"]
-        }
+renaloc_no_match = renaloc[~renaloc.commune.isin(commune_gps.GPS_NAME)]
+gps_no_match = commune_gps[~commune_gps.GPS_NAME.isin(renaloc.commune)]
 
 
+def standardize_name(var, pattern, replace):
+    out = var.loc[:].str.replace(pattern, replace)
+    return out.values
 
-[k for k, v in dico.items() if 'dogo dogo' in v]
 
-sorted(renaloc.commune[~renaloc.commune.isin(commune_gps.GPS_NAME)].unique())
-sorted(commune_gps.GPS_NAME[~commune_gps.GPS_NAME.isin(renaloc.commune)])
+gps_no_match.loc[:, 'standard_name'] = standardize_name(gps_no_match['GPS_NAME'], "'", "")
+renaloc_no_match.loc[:, 'standard_name'] = standardize_name(renaloc_no_match['commune'], "'", "")
+
+
+dico = {}
+
+for idx in gps_no_match.index:
+    standard_name = gps_no_match.loc[idx, 'standard_name']
+    if standard_name in renaloc_no_match.standard_name.tolist():
+        print(standard_name)
+        ren_name = renaloc_no_match.loc[renaloc_no_match['standard_name'] == standard_name,'commune'].unique()[0]
+        dico[ren_name] = gps_no_match.loc[idx, 'GPS_NAME']
+        commune_gps.loc[idx, 'GPS_NAME'] = ren_name
+
+dico
+
+
+renaloc_no_match = renaloc[~renaloc.commune.isin(commune_gps.GPS_NAME)]
+gps_no_match = commune_gps[~commune_gps.GPS_NAME.isin(renaloc.commune)]
+
+gps_no_match.loc[:, 'standard_name'] = standardize_name(gps_no_match['GPS_NAME'], "-", " ")
+renaloc_no_match.loc[:, 'standard_name'] = standardize_name(renaloc_no_match['commune'], "-", " ")
+
+
+for idx in gps_no_match.index:
+    standard_name = gps_no_match.loc[idx, 'standard_name']
+    if standard_name in renaloc_no_match.standard_name.tolist():
+        print(standard_name)
+        ren_name = renaloc_no_match.loc[renaloc_no_match['standard_name'] == standard_name,'commune'].unique()[0]
+        dico[ren_name] = gps_no_match.loc[idx, 'GPS_NAME']
+        commune_gps.loc[idx, 'GPS_NAME'] = ren_name
+
+renaloc_no_match = renaloc[~renaloc.commune.isin(commune_gps.GPS_NAME)]
+gps_no_match = commune_gps[~commune_gps.GPS_NAME.isin(renaloc.commune)]
+
+
+gps_no_match.loc[:, 'standard_name'] = standardize_name(gps_no_match['GPS_NAME'], " ", "")
+renaloc_no_match.loc[:, 'standard_name'] = standardize_name(renaloc_no_match['commune'], " ", "")
+
+
+for idx in gps_no_match.index:
+    standard_name = gps_no_match.loc[idx, 'standard_name']
+    if standard_name in renaloc_no_match.standard_name.tolist():
+        print(standard_name)
+        ren_name = renaloc_no_match.loc[renaloc_no_match['standard_name'] == standard_name,'commune'].unique()[0]
+        dico[ren_name] = gps_no_match.loc[idx, 'GPS_NAME']
+        commune_gps.loc[idx, 'GPS_NAME'] = ren_name
+
+renaloc_no_match = renaloc[~renaloc.commune.isin(commune_gps.GPS_NAME)]
+gps_no_match = commune_gps[~commune_gps.GPS_NAME.isin(renaloc.commune)]
+
+
+dico["attantane"] = "attatane"
+dico["bankilare"] = "bankillare"
+dico['birni lalle'] = 'birni nlalle'
+dico['damagaram takaya'] = "damagaram-t"
+dico['dan-goulbi'] = 'dan goulgi'
+dico['diagourou'] = 'diagorou'
+dico["dingazi"] = 'dingazi banda'
+dico["djiratawa"] = 'djirataoua'
+dico["dogonkiria"] = "dogon kirya"
+dico['el allassane maireyrey'] = 'alhassane  mairerey'
+dico['falmey/falmey haoussa'] = 'falmey'
+dico['farey'] = 'farrey'
+dico['galma koudawatche'] = "galma"
+dico['goroubankassam'] = 'goroun bakassam'
+dico['guidan amoumoune'] = 'guidan amoumane'
+dico['guilladje'] = 'guiladje'
+dico['kablewa'] = 'kabalewa'
+dico['kourfeye centre'] = 'kourfey centre'
+dico['kourteye'] = 'kourtey'
+dico['makalondi'] = "parc w"
+dico['matamey'] = "matameye"
+dico["n'guelbely"] = 'nguel bely'
+dico['ouro gueladjo'] = 'ouro gueladio'
+dico['roumbou 1'] = 'roumbou i'
+dico['sakoira'] = 'sakouara'
+dico['sarkin haoussa'] = "serkin haoussa"
+dico['sarkin yamma'] = 'sarkin yama'
+dico['tagriss'] = 'tagris'
+dico['tombokoirey 1'] = 'tombokoarey 1'
+dico['tombokoirey 2'] = 'tombokoarey 2'
+dico['tondikiwindi'] = 'tondikwindi'
+dico['tsernaoua'] = 'tsernawa'
+
+
+for comm in dico.keys():
+    commune_gps.GPS_NAME[commune_gps.GPS_NAME == dico[comm]] = comm
+
+renaloc_no_match = renaloc[~renaloc.commune.isin(commune_gps.GPS_NAME)]
+gps_no_match = commune_gps[~commune_gps.GPS_NAME.isin(renaloc.commune)]
+
+
+#[k for k, v in dico.items() if 'dogo dogo' in v]
+
 
 # TODO Add region, departement, commune in dhis
 
