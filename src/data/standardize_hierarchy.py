@@ -77,7 +77,7 @@ bureaux.commune[bureaux.commune == 'maradi arrondissement 2'] = 'arrondissement 
 bureaux.commune[bureaux.commune == 'maradi arrondissement 3'] = 'arrondissement 3'
 bureaux.departement[bureaux.departement == 'tibiri (doutchi)'] = 'tibiri'
 
-# TODO Geocache osm
+# Standardize GPS communes names
 
 fp = '/Users/grlurton/data/niger_election_data/external/commune_shp/nigcom.shp'
 commune_gps = gpd.read_file(fp)
@@ -188,6 +188,23 @@ gps_no_match = commune_gps[~commune_gps.GPS_NAME.isin(renaloc.commune)]
 
 #[k for k, v in dico.items() if 'dogo dogo' in v]
 
+# Geocache OSM
+
+# OSM data from https://download.geofabrik.de/africa/niger.html
+
+fp = '/Users/grlurton/data/osm/niger-latest-free.shp/gis_osm_places_free_1.shp'
+osm_data = gpd.read_file(fp)
+
+commune_gps.crs
+
+osm_data.crs
+osm_data = osm_data.to_crs(commune_gps.crs)
+
+
+
+osm_data = gpd.sjoin(osm_data, commune_gps, how="inner", op="within")
+
+commune_gps.columns
 
 # TODO Add region, departement, commune in dhis
 
