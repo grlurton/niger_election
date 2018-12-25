@@ -186,7 +186,7 @@ renaloc_no_match = renaloc[~renaloc.commune.isin(commune_gps.GPS_NAME)]
 gps_no_match = commune_gps[~commune_gps.GPS_NAME.isin(renaloc.commune)]
 
 
-#[k for k, v in dico.items() if 'dogo dogo' in v]
+# [k for k, v in dico.items() if 'dogo dogo' in v]
 
 # Geocache OSM
 
@@ -195,18 +195,61 @@ gps_no_match = commune_gps[~commune_gps.GPS_NAME.isin(renaloc.commune)]
 fp = '/Users/grlurton/data/osm/niger-latest-free.shp/gis_osm_places_free_1.shp'
 osm_data = gpd.read_file(fp)
 
-commune_gps.crs
-
-osm_data.crs
 osm_data = osm_data.to_crs(commune_gps.crs)
-
 
 
 osm_data = gpd.sjoin(osm_data, commune_gps, how="inner", op="within")
 
-commune_gps.columns
 
 # TODO Add region, departement, commune in dhis
 
 
 # TODO if needed geocache DHIS
+
+
+# Standardize output
+
+renacom_keep = ['MILIEU', 'region', 'departement', 'commune', 'LOCALITE',
+                'TYPELOCALITE', 'MASCULIN', 'FEMININ',
+                'TOTAL', 'LONGITUDE', 'LATITUDE']
+renacom_out = renacom[renacom_keep]
+renacom_out.columns = ['milieu', 'region', 'departement', 'commune',
+                       'locality', 'locality_type', 'hommes', 'femmes',
+                       'population', 'longitude', 'latitude']
+renacom_out['source'] = 'renacom'
+renacom_out['locality_id'] = ['RENACOM'] + pd.Series(list(range(len(renacom_out)))).astype(str)
+
+renaloc_keep = ['locality', 'population', 'hommes', 'femmes',
+                'settlement_type', 'region', 'departement', 'commune',
+                'longitude', 'latitude']
+renaloc_out = renaloc[pd.isnull(renaloc.milieu)]
+renaloc_out = renaloc_out[renaloc_keep]
+renaloc_out.columns = ['locality', 'population', 'hommes', 'femmes',
+                       'locality_type', 'region', 'departement', 'commune',
+                       'longitude', 'latitude']
+renaloc_out['source'] = 'renaloc'
+renaloc_out['locality_id'] = ['RENALOC'] + pd.Series(list(range(len(renaloc_out)))).astype(str)
+
+osm_keep = ['osm_id', 'fclass', 'population', 'name', 'geometry', 'GPS_NAME',
+            'REGION']
+osm_data['longitude'] = osm_data.geometry.x
+osm_data['latitude'] = osm_data.geometry.y
+osm_out = osm_data[osm_keep]
+osm_out.columns = ['locality_id', 'locality_type', 'population', 'locality',
+                   'geometry', 'commune', 'region']
+osm_out['source'] = 'osm'
+
+bureaux_out = bureaux[~(bureaux.region == 'diaspora')]
+bureaux_out['source'] = 'bureaux'
+
+
+data_out = renacom_out.append(renaloc_out).append(osm_out).append(bureaux_out)
+
+
+
+
+
+
+
+
+data_out.to_csv("~/data/niger_election_data/processed/pooled_data.csv")
