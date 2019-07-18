@@ -82,3 +82,5 @@ data/dhis
 
 # Temp files
 .DS_Store
+
+ETAT_STRUCTURE_POPULATION.pdf
